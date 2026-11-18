@@ -1,0 +1,8 @@
+{
+  "name": "Mobile Chess Insight Analyzer",
+  "description": "A professional android chess analysis tool featuring Stockfish integration, game review, and detailed performance metrics for players.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,347 @@
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> # 1. ��४����� ⥪���� ���� PowerShell �� ���஥��� JDK �� Android Studio:                                         
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"                                                
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> $env:Path = "$env:JAVA_HOME\bin;$env:Path"                                                                    
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android>
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> # 2. ������� ���� � Android SDK � local.properties (�⮡� Gradle �筮 ���� SDK):                                 
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> $sdkPath = "$env:LOCALAPPDATA\Android\Sdk".Replace("\", "\\")
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> Set-Content -Path ".\local.properties" -Value "sdk.dir=$sdkPath" -Encoding ASCII
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android>
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> # 3. ��⠭����� ���� 䮭��� ����� Gradle (����饭�� �� Java 25) � �������� ᡮ�� APK:                               
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> .\gradlew.bat --stop                                                                                          
+Stopping Daemon(s)
+1 Daemon stopped
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> .\gradlew.bat assembleDebug
+Starting a Gradle Daemon, 1 stopped Daemon could not be reused, use --status for details                                                                                            
+
+> Configure project :expo-gradle-plugin:expo-autolinking-plugin-shared
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin-shared/build.gradle.kts:32:9: The expression is unused
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin:compileKotlin
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/src/main/kotlin/expo/modules/plugin/ExpoAutolinkingPlugin.kt:29:71 Name shadowed: project
+
+> Task :expo-module-gradle-plugin:compileKotlin
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/expo-modules-core/expo-module-gradle-plugin/src/main/kotlin/expo/modules/plugin/android/AndroidLibraryExtension.kt:9:24 'targetSdk: Int?' is deprecated. Will be removed from library DSL in v9.0. Use testOptions.targetSdk or/and lint.targetSdk instead                            
+
+> Configure project :
+[ExpoRootProject] Using the following versions:
+  - buildTools:  35.0.0
+  - minSdk:      24
+  - compileSdk:  35
+  - targetSdk:   35
+  - ndk:         27.1.12297006
+  - kotlin:      2.0.21
+  - ksp:         2.0.21-1.0.28
+
+> Configure project :app
+Checking the license for package NDK (Side by side) 27.1.12297006 in C:\Users\User\AppData\Local\Android\Sdk\licenses
+License for package NDK (Side by side) 27.1.12297006 accepted.
+Preparing "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006".
+"Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" ready.
+Installing NDK (Side by side) 27.1.12297006 in C:\Users\User\AppData\Local\Android\Sdk\ndk\27.1.12297006
+"Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" complete.
+"Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" finished.
+
+> Configure project :expo                                                                                                                                                           
+
+Using expo modules
+  - expo-constants (17.1.8)
+  - expo-modules-core (2.5.0)
+  - [📦] expo-asset (11.1.7)
+  - [📦] expo-document-picker (13.1.6)
+  - [📦] expo-file-system (18.1.11)
+  - [📦] expo-font (13.3.2)
+  - [📦] expo-linking (7.1.7)
+  - [📦] expo-sharing (13.1.5)
+  - [📦] expo-splash-screen (0.30.10)
+  - [📦] expo-sqlite (15.2.14)
+  - [📦] expo-system-ui (5.0.11)
+
+
+> Configure project :react-native-reanimated
+Android gradle plugin: 8.8.2
+Gradle: 8.13
+Checking the license for package Android SDK Platform 35 in C:\Users\User\AppData\Local\Android\Sdk\licenses
+License for package Android SDK Platform 35 accepted.
+Preparing "Install Android SDK Platform 35 (revision 2)".
+"Install Android SDK Platform 35 (revision 2)" ready.
+Installing Android SDK Platform 35 in C:\Users\User\AppData\Local\Android\Sdk\platforms\android-35
+"Install Android SDK Platform 35 (revision 2)" complete.
+"Install Android SDK Platform 35 (revision 2)" finished.
+
+> Task :expo-constants:createExpoConfig
+The NODE_ENV environment variable is required but was not specified. Ensure the project is bundled with Expo CLI or NODE_ENV is set. Using only .env.local and .env
+
+> Task :expo-modules-core:processDebugManifest
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\AndroidManifest.xml:8:9-11:45 Warning:
+        meta-data#com.facebook.soloader.enabled@android:value was tagged at AndroidManifest.xml:8 to replace other declarations but no other declaration present
+
+> Task :react-native-safe-area-context:processDebugManifest
+package="com.th3rdwave.safeareacontext" found in source AndroidManifest.xml: C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\react-native-safe-area-context\android\src\main\AndroidManifest.xml.                                                                                                                                                
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.                                                 
+Recommendation: remove package="com.th3rdwave.safeareacontext" from the source AndroidManifest.xml: C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\react-native-safe-area-context\android\src\main\AndroidManifest.xml.
+
+> Task :app:processDebugMainManifest
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android\app\src\debug\AndroidManifest.xml:6:5-162 Warning:
+        application@android:usesCleartextTraffic was tagged at AndroidManifest.xml:6 to replace other declarations but no other declaration present
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android\app\src\debug\AndroidManifest.xml Warning:
+        provider#expo.modules.filesystem.FileSystemFileProvider@android:authorities was tagged at AndroidManifest.xml:0 to replace other declarations but no other declaration present
+
+> Task :app:processDebugResources FAILED                                                                                                                                            
+
+> Task :expo-modules-core:compileDebugKotlin
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/expo-modules-core/android/src/main/java/expo/modules/apploader/AppLoaderProvider.kt:34:52 Unchecked cast of 'java.lang.Class<*>!' to 'java.lang.Class<out expo.modules.apploader.HeadlessAppLoader>'.
+
+[Incubating] Problems report is available at: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/android/build/reports/problems/problems-report.html                 
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:processDebugResources'.
+> A failure occurred while executing com.android.build.gradle.internal.res.LinkApplicationAndroidResourcesTask$TaskAction
+   > Android resource linking failed
+     com.nikanokh.chessinsightanalyzermobile.app-mergeDebugResources-47:/values/values.xml:6419: error: resource drawable/splashscreen_logo (aka com.nikanokh.chessinsightanalyzermobile:drawable/splashscreen_logo) not found.
+     com.nikanokh.chessinsightanalyzermobile.app-mergeDebugResources-47:/values/values.xml:6419: error: resource drawable/splashscreen_logo (aka com.nikanokh.chessinsightanalyzermobile:drawable/splashscreen_logo) not found.
+     error: failed linking references.
+
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+>> <?xml version="1.0" encoding="utf-8"?>                                                                                                                                           
+>> <vector xmlns:android="http://schemas.android.com/apk/res/android"                                                                                                               
+>>     android:width="108dp"                                                                                                                                                        
+>>     android:height="108dp"                                                                                                                                                       
+>>     android:viewportWidth="108"                                                                                                                                                  
+>>     android:viewportHeight="108">                                                                                                                                                
+>>     <path                                                                                                                                                                        
+>>         android:fillColor="#779954"                                                                                                                                              
+>>         android:pathData="M54,20 L60,34 L75,34 L63,43 L67,58 L54,49 L41,58 L45,43 L33,34 L48,34 Z"/>                                                                             
+>> </vector>                                                                                                                                                                        
+>> '@                                                                                                                                                                               
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android>
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> # 2. ������ NODE_ENV � �������� ᡮ�� APK (��⠫�� 133 蠣� �������� �� ���):                                      
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> $env:NODE_ENV = "development"                                                                                 
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> .\gradlew.bat assembleDebug
+
+> Configure project :
+[ExpoRootProject] Using the following versions:
+  - buildTools:  35.0.0
+  - minSdk:      24
+  - compileSdk:  35                                                                                                                                                                 
+  - targetSdk:   35                                                                                                                                                                 
+  - ndk:         27.1.12297006                                                                                                                                                      
+  - kotlin:      2.0.21                                                                                                                                                             
+  - ksp:         2.0.21-1.0.28                                                                                                                                                      
+
+> Configure project :expo
+
+Using expo modules
+  - expo-constants (17.1.8)
+  - expo-modules-core (2.5.0)
+  - [📦] expo-asset (11.1.7)
+  - [📦] expo-document-picker (13.1.6)
+  - [📦] expo-file-system (18.1.11)
+  - [📦] expo-font (13.3.2)
+  - [📦] expo-linking (7.1.7)
+  - [📦] expo-sharing (13.1.5)
+  - [📦] expo-splash-screen (0.30.10)
+  - [📦] expo-sqlite (15.2.14)
+  - [📦] expo-system-ui (5.0.11)
+
+
+> Configure project :react-native-reanimated
+Android gradle plugin: 8.8.2
+Gradle: 8.13
+
+> Task :react-native-reanimated:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-safe-area-context:compileDebugKotlin                                                                                                                           
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:59:23 'val uiImplementation: UIImplementation!' is deprecated. Deprecated in Java.
+
+> Task :expo:compileDebugKotlin
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/expo/android/src/main/java/expo/modules/fetch/ExpoFetchModule.kt:30:39 'constructor(reactContext: ReactContext): ForwardingCookieHandler' is deprecated. Use the default constructor.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/expo/android/src/main/java/expo/modules/fetch/NativeResponse.kt:41:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/expo/android/src/main/java/expo/modules/fetch/NativeResponse.kt:43:11 'fun deallocate(): Unit' is deprecated. Use sharedObjectDidRelease() instead.
+
+> Task :react-native-screens:compileDebugKotlin
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:66:17 'constructor(name: String, className: String, canOverrideExistingModule: Boolean, needsEagerInit: Boolean, hasConstants: Boolean, isCxxModule: Boolean, isTurboModule: Boolean): ReactModuleInfo' is deprecated. This constructor is deprecated and will be removed in the future. Use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)].
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:46:77 Unchecked cast of '(androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior<android.view.View!>?..androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior<*>?)' to 'com.google.android.material.bottomsheet.BottomSheetBehavior<com.swmansion.rnscreens.Screen>'.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:378:36 'fun setTransl
+ucent(screen: Screen, activity: Activity?, context: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:397:36 'fun setColor(
+screen: Screen, activity: Activity?, context: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:415:36 'fun setNavigationBarColor(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:432:36 'fun setNavigationBarTranslucent(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:217:31 'var targetElevation: Float' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:220:13 'fun setHasOptionsMenu(p0: Boolean): Unit' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:397:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:404:22 'fun onPrepareOptionsMenu(p0: Menu): Unit' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:407:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:412:22 'fun onCreateOptionsMenu(p0: Menu, p1: MenuInflater): Unit' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:7:8 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:210:9 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:212:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:214:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:7:8 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:204:14 'va
+r statusBarColor: Int?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:221:14 'va
+r isStatusBarTranslucent: Boolean?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:238:14 'var navigationBarColor: Int?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:247:14 'var isNavigationBarTranslucent: Boolean?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:382:48 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:383:49 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:384:45 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:385:52 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:386:48 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:387:51 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:388:56 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:389:57 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:390:51 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:55:42 'fun replaceSystemWindowInsets(p0: Int, p1: Int, p2: Int, p3: Int): WindowInsetsCompat' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:56:39 'val systemWindowInsetLeft: Int' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:58:39 'val systemWindowInsetRight: Int' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:59:39 'val systemWindowInsetBottom: Int' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:102:53 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:106:37 'v
+ar statusBarColor: Int?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:113:48 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:116:32 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:162:49 'v
+ar isStatusBarTranslucent: Boolean?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:218:43 'var navigationBarColor: Int?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:218:72 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:224:16 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:241:55 'var isNavigationBarTranslucent: Boolean?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:283:13 'f
+un setColor(screen: Screen, activity: Activity?, context: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:285:13 'f
+un setTranslucent(screen: Screen, activity: Activity?, context: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:289:13 'fun setNavigationBarColor(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:290:13 'fun setNavigationBarTranslucent(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.        
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:354:42 'v
+ar statusBarColor: Int?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:356:48 'v
+ar isStatusBarTranslucent: Boolean?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:359:57 'var navigationBarColor: Int?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:360:63 'var isNavigationBarTranslucent: Boolean?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:5:8 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:142:9 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:144:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:146:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:148:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:150:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:152:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:154:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:7:8 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+w: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:25:13 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+
+> Task :react-native-svg:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-reanimated:configureCMakeDebug[arm64-v8a]
+Checking the license for package CMake 3.22.1 in C:\Users\User\AppData\Local\Android\Sdk\licenses
+License for package CMake 3.22.1 accepted.
+Preparing "Install CMake 3.22.1 v.3.22.1".
+"Install CMake 3.22.1 v.3.22.1" ready.
+Installing CMake 3.22.1 in C:\Users\User\AppData\Local\Android\Sdk\cmake\3.22.1
+"Install CMake 3.22.1 v.3.22.1" complete.                                                                                                                                           
+"Install CMake 3.22.1 v.3.22.1" finished.                                                                                                                                           
+
+> Task :react-native-reanimated:configureCMakeDebug[armeabi-v7a]
+C/C++: CMake Warning in src/main/cpp/reanimated/CMakeLists.txt:
+C/C++:   The object file directory
+C/C++:     C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-reanimated/android/.cxx/Debug/2b6ize6w/armeabi-v7a/src/main/cpp/reanimated/CMakeFiles/reanimated.dir/./
+C/C++:   has 187 characters.  The maximum full path to an object file is 250
+C/C++:   characters (see CMAKE_OBJECT_PATH_MAX).  Object file
+C/C++:     C_/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-reanimated/Common/cpp/reanimated/NativeModules/ReanimatedModuleProxySpec.cpp.o
+C/C++:   cannot be safely placed under this directory.  The build may not work
+C/C++:   correctly.
+
+> Task :app:configureCMakeDebug[arm64-v8a]
+C/C++: CMake Warning in C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt:
+C/C++:   The object file directory
+C/C++:     C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/android/app/.cxx/Debug/3y3gt4q1/arm64-v8a/rngesturehandler_codegen_autolinked_build/CMakeFiles/react_codegen_rngesturehandler_codegen.dir/./
+C/C++:   has 198 characters.  The maximum full path to an object file is 250
+C/C++:   characters (see CMAKE_OBJECT_PATH_MAX).  Object file
+C/C++:     react/renderer/components/rngesturehandler_codegen/rngesturehandler_codegenJSI-generated.cpp.o
+C/C++:   cannot be safely placed under this directory.  The build may not work
+C/C++:   correctly.
+
+> Task :react-native-reanimated:buildCMakeDebug[armeabi-v7a][reanimated,worklets] FAILED
+C/C++: ninja: error: mkdir(src/main/cpp/reanimated/CMakeFiles/reanimated.dir/C_/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-reanimated): No such file or directory
+
+[Incubating] Problems report is available at: file:///C:/Users/User/AndroidStudioProjects/chess_analyzer/mobile/android/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':react-native-reanimated:buildCMakeDebug[armeabi-v7a][reanimated,worklets]'.
+> com.android.ide.common.process.ProcessException: ninja: Entering directory `C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\react-native-reanimated\android\.cxx\Debug\2b6ize6w\armeabi-v7a'
+  [0/2] Re-checking globbed directories...
+  [1/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/537774aa863c7b176d553224670a1d19/WorkletRuntimeRegistry.cpp.o
+  [2/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/20e2515d50954b6242a54595b470ee76/cpp/worklets/Tools/JSLogger.cpp.o
+  [3/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/34a22e3e099fa96bcfbcd9df8e4f540d/Tools/ReanimatedJSIUtils.cpp.o
+  [4/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/21f90657e8fdadb9874446f2c25e0074/worklets/Tools/AsyncQueue.cpp.o
+  [5/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/21f90657e8fdadb9874446f2c25e0074/worklets/Tools/JSISerializer.cpp.o
+  [6/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/21f90657e8fdadb9874446f2c25e0074/worklets/Tools/JSScheduler.cpp.o
+  [7/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/827bc235788a8c1f00598b77c34ce4f2/WorkletsModuleProxySpec.cpp.o
+  [8/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/34a22e3e099fa96bcfbcd9df8e4f540d/SharedItems/Shareables.cpp.o
+  [9/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/537774aa863c7b176d553224670a1d19/EventHandlerRegistry.cpp.o
+  [10/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/21f90657e8fdadb9874446f2c25e0074/worklets/Tools/UIScheduler.cpp.o
+  [11/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/android/PlatformLogger.cpp.o
+  [12/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/34a22e3e099fa96bcfbcd9df8e4f540d/Tools/WorkletEventHandler.cpp.o
+  [13/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/d5bfa8027328c401b2cef7a038bc8e22/ReanimatedRuntime.cpp.o
+  [14/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/d5bfa8027328c401b2cef7a038bc8e22/ReanimatedHermesRuntime.cpp.o
+  [15/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/d5bfa8027328c401b2cef7a038bc8e22/RNRuntimeWorkletDecorator.cpp.o
+  [16/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/827bc235788a8c1f00598b77c34ce4f2/WorkletsModuleProxy.cpp.o
+  [17/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/34a22e3e099fa96bcfbcd9df8e4f540d/Tools/ReanimatedVersion.cpp.o
+  [18/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/d5bfa8027328c401b2cef7a038bc8e22/WorkletRuntime.cpp.o
+  [19/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/d5bfa8027328c401b2cef7a038bc8e22/WorkletRuntimeDecorator.cpp.o
+  [20/41] Building CXX object src/main/cpp/reanimated/CMakeFiles/reanimated.dir/7a09135ab6e30e58b3e8f2152741a341/AnimatedSensorModule.cpp.o
+  [21/41] Building CXX object src/main/cpp/worklets/CMakeFiles/worklets.dir/android/AndroidUIScheduler.cpp.o
+  [22/41] Building CXX object src/main/cpp/reanimated/CMakeFiles/reanimated.dir/e3889d6611a388387890301634159716/LayoutAnimationsManager.cpp.o
+  [23/41] Building CXX object src/main/cpp/reanimated/CMakeFiles/reanimated.dir/e9edb30d32f2da458fa13e8c05ccb3ec/Fabric/PropsRegistry.cpp.o
+  ninja: build stopped: .
+
+  C++ build system [build] failed while executing:
+      @echo off
+      "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe" ^
+        -C ^
+        "C:\\Users\\User\\AndroidStudioProjects\\chess_analyzer\\mobile\\node_modules\\react-native-reanimated\\android\\.cxx\\Debug\\2b6ize6w\\armeabi-v7a" ^
+        reanimated ^
+        worklets
+    from C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\react-native-reanimated\android
+  ninja: error: mkdir(src/main/cpp/reanimated/CMakeFiles/reanimated.dir/C_/Users/User/AndroidStudioProjects/chess_analyzer/mobile/node_modules/react-native-reanimated): No such file or directory
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 4m 16s
+229 actionable tasks: 106 executed, 123 up-to-date
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> 

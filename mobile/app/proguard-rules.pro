@@ -1,0 +1,2 @@
+-keep class com.nikanokh.chessinsightanalyzermobile.** { *; }
+-dontwarn kotlin.**

@@ -1,0 +1,339 @@
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> # 1. ��⠭����� Gradle-����� ��। ���⪮� CMake-���                                                                
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\android> .\gradlew.bat --stop                                                                                          
+removed 3 packages, and audited 713 packages in 9s
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile>
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile> # 3. ������� newArchEnabled=false � ���⥪���� arm64-v8a � android\gradle.properties                                    
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile> (Get-Content .\android\gradle.properties) `
+>>   -replace 'newArchEnabled=true', 'newArchEnabled=false' `
+>>   -replace 'reactNativeArchitectures=armeabi-v7a,arm64-v8a,x86,x86_64', 'reactNativeArchitectures=arm64-v8a' |
+>>   Set-Content .\android\gradle.properties -Encoding UTF8
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile>
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile> # 4. ������ ���� ��� CMake (.cxx) � �����묨 ���ﬨ                                  
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile> Remove-Item -Recurse -Force .\android\app\.cxx -ErrorAction SilentlyContinue
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile>
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile> # 5. �����஢��� ����� �஥�� �� ���⪨� ��� X: (��室 ����� 250 ᨬ����� � Windows)       
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile> subst X: /D 2>$null                                                               
+Invalid parameter - X:
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile> subst X: "C:\Users\User\AndroidStudioProjects\chess_analyzer"               
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile>
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile> # 6. �������� ᡮ�� APK � ���⪮�� ��� X:\mobile\android                                                                  
+PS C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile> cd X:\mobile\android
+PS X:\mobile\android> $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"                                                                                                
+PS X:\mobile\android> $env:Path = "$env:JAVA_HOME\bin;$env:Path"                                                                                                                    
+PS X:\mobile\android> .\gradlew.bat assembleDebug
+Starting a Gradle Daemon, 2 stopped Daemons could not be reused, use --status for details
+
+> Task :expo-gradle-plugin:expo-autolinking-plugin:compileKotlin
+w: file:///X:/mobile/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/src/main/kotlin/expo/modules/plugin/ExpoAutolinkingPlugin.kt:29:71 Name shadowed: project
+
+> Configure project :
+[ExpoRootProject] Using the following versions:
+  - buildTools:  35.0.0
+  - minSdk:      24
+  - compileSdk:  35
+  - targetSdk:   35                                                                                                                                                                 
+  - ndk:         27.1.12297006                                                                                                                                                      
+  - kotlin:      2.0.21                                                                                                                                                             
+  - ksp:         2.0.21-1.0.28                                                                                                                                                      
+
+> Configure project :expo
+
+Using expo modules
+  - expo-constants (17.1.8)
+  - expo-modules-core (2.5.0)
+  - [📦] expo-asset (11.1.7)
+  - [📦] expo-document-picker (13.1.6)
+  - [📦] expo-file-system (18.1.11)
+  - [📦] expo-font (13.3.2)
+  - [📦] expo-linking (7.1.7)
+  - [📦] expo-sharing (13.1.5)
+  - [📦] expo-splash-screen (0.30.10)
+  - [📦] expo-sqlite (15.2.14)
+  - [📦] expo-system-ui (5.0.11)
+
+
+> Task :react-native-safe-area-context:processDebugManifest                                                                                                                         
+package="com.th3rdwave.safeareacontext" found in source AndroidManifest.xml: X:\mobile\node_modules\react-native-safe-area-context\android\src\main\AndroidManifest.xml.            
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.                                                 
+Recommendation: remove package="com.th3rdwave.safeareacontext" from the source AndroidManifest.xml: X:\mobile\node_modules\react-native-safe-area-context\android\src\main\AndroidManifest.xml.
+
+> Task :app:processDebugMainManifest
+X:\mobile\android\app\src\debug\AndroidManifest.xml:6:5-162 Warning:
+        application@android:usesCleartextTraffic was tagged at AndroidManifest.xml:6 to replace other declarations but no other declaration present
+X:\mobile\android\app\src\debug\AndroidManifest.xml Warning:
+        provider#expo.modules.filesystem.FileSystemFileProvider@android:authorities was tagged at AndroidManifest.xml:0 to replace other declarations but no other declaration present
+
+> Task :react-native-safe-area-context:compileDebugKotlin
+w: file:///X:/mobile/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:59:23 'val uiImplementation: UIImplementation!' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-safe-area-context/android/src/paper/java/com/th3rdwave/safeareacontext/InsetsChangeEvent.kt:19:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the diagnostic.
+
+> Task :react-native-svg:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.                                                                                                                          
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-safe-area-context:compileDebugJavaWithJavac
+Note: X:\mobile\node_modules\react-native-safe-area-context\android\src\paper\java\com\th3rdwave\safeareacontext\NativeSafeAreaContextSpec.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.                                                                                                                                
+
+> Task :expo-modules-core:compileDebugJavaWithJavac
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:20: error: cannot find symbol
+import expo.modules.kotlin.AppContext;
+                          ^
+  symbol:   class AppContext
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:21: error: cannot find symbol
+import expo.modules.kotlin.CoreLoggerKt;
+                          ^
+  symbol:   class CoreLoggerKt
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:22: error: cannot find symbol
+import expo.modules.kotlin.ExpoBridgeModule;
+                          ^
+  symbol:   class ExpoBridgeModule
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:23: error: cannot find symbol
+import expo.modules.kotlin.KotlinInteropModuleRegistry;
+                          ^
+  symbol:   class KotlinInteropModuleRegistry
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:24: error: cannot find symbol
+import expo.modules.kotlin.ModulesProvider;
+                          ^
+  symbol:   class ModulesProvider
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:25: error: cannot find symbol
+import expo.modules.kotlin.views.ViewWrapperDelegateHolder;
+                                ^
+  symbol:   class ViewWrapperDelegateHolder
+  location: package expo.modules.kotlin.views
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:34: error: cannot find symbol
+  protected ModulesProvider mModulesProvider;
+            ^
+  symbol:   class ModulesProvider
+  location: class ModuleRegistryAdapter
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:18: error: cannot find symbol
+import expo.modules.kotlin.CoreLoggerKt;
+                          ^
+  symbol:   class CoreLoggerKt
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:19: error: cannot find symbol
+import expo.modules.kotlin.ExpoModulesHelper;
+                          ^
+  symbol:   class ExpoModulesHelper
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:20: error: cannot find symbol
+import expo.modules.kotlin.KPromiseWrapper;
+                          ^
+  symbol:   class KPromiseWrapper
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:21: error: cannot find symbol
+import expo.modules.kotlin.KotlinInteropModuleRegistry;
+                          ^
+  symbol:   class KotlinInteropModuleRegistry
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:22: error: cannot find symbol
+import expo.modules.kotlin.ModulesProvider;
+                          ^
+  symbol:   class ModulesProvider
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:46: error: cannot find symbol
+  private List<ViewWrapperDelegateHolder> mWrapperDelegateHolders = null;
+               ^
+  symbol:   class ViewWrapperDelegateHolder
+  location: class ModuleRegistryAdapter
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:57: error: cannot find symbol
+  public ModuleRegistryAdapter(ReactModuleRegistryProvider moduleRegistryProvider, ModulesProvider modulesProvider) {
+                                                                                   ^
+  symbol:   class ModulesProvider
+  location: class ModuleRegistryAdapter
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:83: error: cannot find symbol
+    @Nullable Consumer<AppContext> appContextConsumer
+                       ^
+  symbol:   class AppContext
+  location: class ModuleRegistryAdapter
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:37: error: cannot find symbol
+  private KotlinInteropModuleRegistry mKotlinInteropModuleRegistry;
+          ^
+  symbol:   class KotlinInteropModuleRegistry
+  location: class NativeModulesProxy
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:51: error: cannot find symbol
+  public NativeModulesProxy(ReactApplicationContext context, ModuleRegistry moduleRegistry, ModulesProvider modulesProvider) {
+                                                                                            ^
+  symbol:   class ModulesProvider
+  location: class NativeModulesProxy
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:62: error: cannot find symbol
+  public KotlinInteropModuleRegistry getKotlinInteropModuleRegistry() {
+         ^
+  symbol:   class KotlinInteropModuleRegistry
+  location: class NativeModulesProxy
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\interfaces\permissions\Permissions.java:22: error: cannot find symbol
+    @NonNull final expo.modules.kotlin.Promise promise,
+                                      ^
+  symbol:   class Promise
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\interfaces\permissions\Permissions.java:44: error: cannot find symbol
+    @NonNull final expo.modules.kotlin.Promise promise,
+                                      ^
+  symbol:   class Promise
+  location: package expo.modules.kotlin
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:73: error: cannot find symbol
+      KotlinInteropModuleRegistry kotlinInteropModuleRegistry = proxy.getKotlinInteropModuleRegistry();
+      ^
+  symbol:   class KotlinInteropModuleRegistry
+  location: class ModuleRegistryAdapter
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:100: error: cannot find symbol
+    nativeModulesList.add(new ExpoBridgeModule(reactContext, new WeakReference<>(nativeModulesProxy)));
+                              ^
+  symbol:   class ExpoBridgeModule
+  location: class ModuleRegistryAdapter
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:110: error: cannot find symbol
+    KotlinInteropModuleRegistry kotlinInteropModuleRegistry = modulesProxy.getKotlinInteropModuleRegistry();
+    ^
+  symbol:   class KotlinInteropModuleRegistry
+  location: class ModuleRegistryAdapter
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:140: error: cannot find symbol
+      CoreLoggerKt.getLogger().error("❌ NativeModuleProxy was configured with a different instance of the modules registry.", null);
+      ^
+  symbol:   variable CoreLoggerKt
+  location: class ModuleRegistryAdapter
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:44: error: cannot find symbol
+    mKotlinInteropModuleRegistry = new KotlinInteropModuleRegistry(
+                                       ^
+  symbol:   class KotlinInteropModuleRegistry
+  location: class NativeModulesProxy
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:45: error: package ExpoModulesHelper does not exist
+      Objects.requireNonNull(ExpoModulesHelper.Companion.getModulesProvider()),
+                                              ^
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:55: error: cannot find symbol
+    mKotlinInteropModuleRegistry = new KotlinInteropModuleRegistry(
+                                       ^
+  symbol:   class KotlinInteropModuleRegistry
+  location: class NativeModulesProxy
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:81: error: cannot find symbol
+    KotlinInteropModuleRegistry kotlinModuleRegistry = getKotlinInteropModuleRegistry();
+    ^
+  symbol:   class KotlinInteropModuleRegistry
+  location: class NativeModulesProxy
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:90: error: cannot find symbol
+    CoreLoggerKt.getLogger().info("✅ Constants were exported");
+    ^
+  symbol:   variable CoreLoggerKt
+  location: class NativeModulesProxy
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\NativeModulesProxy.java:108: error: cannot find symbol
+      mKotlinInteropModuleRegistry.callMethod(moduleName, methodName, arguments, new KPromiseWrapper(promise));
+                                                                                     ^
+  symbol:   class KPromiseWrapper
+  location: class NativeModulesProxy
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\interfaces\permissions\Permissions.java:25: error: reference to getPermissionsWithPermissionsManager is ambiguous
+    getPermissionsWithPermissionsManager(permissionsManager, new Promise() {
+    ^
+  both method getPermissionsWithPermissionsManager(Permissions,Promise,String...) in Permissions and method getPermissionsWithPermissionsManager(Permissions,Promise,String...) in Permissions match
+C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\interfaces\permissions\Permissions.java:47: error: reference to askForPermissionsWithPermissionsManager is ambiguous
+    askForPermissionsWithPermissionsManager(permissionsManager, new Promise() {
+    ^
+  both method askForPermissionsWithPermissionsManager(Permissions,Promise,String...) in Permissions and method askForPermissionsWithPermissionsManager(Permissions,Promise,String...) in Permissions match
+32 errors
+
+> Task :expo-modules-core:compileDebugJavaWithJavac FAILED                                                                                                                          
+
+> Task :react-native-screens:compileDebugKotlin
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:66:17 'constructor(name: String, className: String, canOverrideExistingModule: Boolean, needsEagerInit: Boolean, hasConstants: Boolean, isCxxModule: Boolean, isTurboModule: Boolean): ReactModuleInfo' is deprecated. This constructor is deprecated and will be removed in the future. Use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)].                                                                 
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:46:77 Unchecked cast of '(androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior<android.view.View!>?..androidx.coordinatorlayout.widget.CoordinatorLayout.Behavior<*>?)' to 'com.google.android.material.bottomsheet.BottomSheetBehavior<com.swmansion.rnscreens.Screen>'.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:378:36 'fun setTranslucent(screen: Screen, activity: Activity?, conte
+xt: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:397:36 'fun setColor(screen: Screen, activity: Activity?, context: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.  
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:415:36 'fun setNavigationBarColor(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:432:36 'fun setNavigationBarTranslucent(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:217:31 'var targetElevation: Float' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:220:13 'fun setHasOptionsMenu(p0: Boolean): Unit' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:397:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:404:22 'fun onPrepareOptionsMenu(p0: Menu): Unit' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:407:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Please add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:412:22 'fun onCreateOptionsMenu(p0: Menu, p1: MenuInflater): Unit' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:7:8 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:210:9 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:212:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfigViewManager.kt:214:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:7:8 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:204:14 'var statusBarColor: Int?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:221:14 'var isStatusBarTranslucent: Boolean?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:238:14 'var navigationBarColor: Int?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:247:14 'var isNavigationBarTranslucent: Boolean?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:382:48 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:383:49 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:384:45 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:385:52 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:386:48 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:387:51 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:388:56 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:389:57 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:390:51 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:55:42 'fun replaceSystemWindowInsets(p0: Int, p1: Int, p2: Int, p3: Int): WindowInsetsCompat' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:56:39 'val systemWindowInsetLeft: Int' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:58:39 'val systemWindowInsetRight: Int' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:59:39 'val systemWindowInsetBottom: Int' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:102:53 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:106:37 'var statusBarColor: Int?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:113:48 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:116:32 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:162:49 'var isStatusBarTranslucent: Boolean?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:218:43 'var navigationBarColor: Int?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:218:72 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:224:16 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:241:55 'var isNavigationBarTranslucent: Boolean?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:283:13 'fun setColor(screen: Screen, activity: Activity?,
+ context: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:285:13 'fun setTranslucent(screen: Screen, activity: Acti
+vity?, context: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:289:13 'fun setNavigationBarColor(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:290:13 'fun setNavigationBarTranslucent(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:354:42 'var statusBarColor: Int?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:356:48 'var isStatusBarTranslucent: Boolean?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:359:57 'var navigationBarColor: Int?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:360:63 'var isNavigationBarTranslucent: Boolean?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:5:8 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:142:9 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:144:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:146:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:148:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:150:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:152:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarManager.kt:154:13 'class MapBuilder : Any' is deprecated. Deprecated in Java.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:7:8 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+w: file:///X:/mobile/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:25:13 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+
+[Incubating] Problems report is available at: file:///X:/mobile/android/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':expo-modules-core:compileDebugJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  C:\Users\User\AndroidStudioProjects\chess_analyzer\mobile\node_modules\expo-modules-core\android\src\main\java\expo\modules\adapters\react\ModuleRegistryAdapter.java:20: error: cannot find symbol
+  import expo.modules.kotlin.AppContext;
+                            ^
+    symbol:   class AppContext
+    location: package expo.modules.kotlin
+  32 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 1m 58s
+130 actionable tasks: 93 executed, 37 up-to-date
+PS X:\mobile\android> 
