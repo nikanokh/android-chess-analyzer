@@ -4,30 +4,44 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.FolderSpecial
-import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.nikanokh.chessinsightanalyzermobile.ui.screens.*
-import com.nikanokh.chessinsightanalyzermobile.ui.theme.*
-import com.nikanokh.chessinsightanalyzermobile.ui.viewmodel.AppTab
+import com.nikanokh.chessinsightanalyzermobile.ui.screens.AnalyzerScreen
+import com.nikanokh.chessinsightanalyzermobile.ui.screens.GamesArchiveScreen
+import com.nikanokh.chessinsightanalyzermobile.ui.screens.HomeScreen
+import com.nikanokh.chessinsightanalyzermobile.ui.screens.RepertoireScreen
+import com.nikanokh.chessinsightanalyzermobile.ui.screens.SettingsScreen
+import com.nikanokh.chessinsightanalyzermobile.ui.theme.AccentGreen
+import com.nikanokh.chessinsightanalyzermobile.ui.theme.BgPrimary
+import com.nikanokh.chessinsightanalyzermobile.ui.theme.BgSecondary
+import com.nikanokh.chessinsightanalyzermobile.ui.theme.ChessInsightTheme
+import com.nikanokh.chessinsightanalyzermobile.ui.theme.TextPrimary
+import com.nikanokh.chessinsightanalyzermobile.ui.theme.TextSecondary
 import com.nikanokh.chessinsightanalyzermobile.ui.viewmodel.ChessViewModel
 
 class MainActivity : ComponentActivity() {
@@ -36,155 +50,151 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ChessInsightTheme {
-                ChessAnalyzerRootApp()
+                ChessAnalyzerMobileApp()
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+private data class BottomNavTab(
+    val title: String,
+    val icon: ImageVector
+)
+
 @Composable
-fun ChessAnalyzerRootApp(viewModel: ChessViewModel = viewModel()) {
-    val uiState by viewModel.uiState.collectAsState()
+fun ChessAnalyzerMobileApp(
+    chessViewModel: ChessViewModel = viewModel()
+) {
+    val uiState by chessViewModel.uiState.collectAsState()
+    var currentTab by rememberSaveable { mutableIntStateOf(1) } // Open directly on Analyzer Board
+
+    val tabs = listOf(
+        BottomNavTab("Главная", Icons.Default.Home),
+        BottomNavTab("Анализатор", Icons.Default.Analytics),
+        BottomNavTab("Партии", Icons.Default.FolderSpecial),
+        BottomNavTab("Дебюты", Icons.Default.MenuBook),
+        BottomNavTab("Настройки", Icons.Default.Settings)
+    )
 
     Scaffold(
-        containerColor = ChessBackground,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = when (uiState.activeTab) {
-                            AppTab.HOME -> "Chess Insight Analyzer"
-                            AppTab.BOARD -> "Интерактивная доска"
-                            AppTab.GAMES -> "Архив партий SQLite"
-                            AppTab.REPERTOIRE -> "Дебютный репертуар ECO"
-                            AppTab.SETTINGS -> "Настройки"
-                        },
-                        color = ChessTextPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ChessSurface,
-                    titleContentColor = ChessTextPrimary
-                )
-            )
-        },
+        containerColor = BgPrimary,
         bottomBar = {
             NavigationBar(
-                containerColor = ChessSurface,
-                tonalElevation = 8.dp
+                containerColor = BgSecondary,
+                contentColor = TextPrimary
             ) {
-                val tabs = listOf(
-                    Triple(AppTab.HOME, "Главная", Icons.Default.Home),
-                    Triple(AppTab.BOARD, "Доска", Icons.Default.GridOn),
-                    Triple(AppTab.GAMES, "Партии", Icons.Default.FolderSpecial),
-                    Triple(AppTab.REPERTOIRE, "Дебюты", Icons.Default.Analytics),
-                    Triple(AppTab.SETTINGS, "Настройки", Icons.Default.Settings)
-                )
-                tabs.forEach { (tab, label, icon) ->
-                    val selected = uiState.activeTab == tab
+                tabs.forEachIndexed { idx, tab ->
+                    val selected = currentTab == idx
                     NavigationBarItem(
                         selected = selected,
-                        onClick = { viewModel.selectTab(tab) },
-                        icon = { Icon(imageVector = icon, contentDescription = label) },
+                        onClick = { currentTab = idx },
+                        icon = {
+                            Icon(
+                                imageVector = tab.icon,
+                                contentDescription = tab.title
+                            )
+                        },
                         label = {
                             Text(
-                                text = label,
+                                text = tab.title,
                                 fontSize = 10.sp,
-                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                                maxLines = 1
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = ChessGreenPrimary,
-                            selectedTextColor = ChessGreenPrimary,
-                            unselectedIconColor = ChessTextSecondary,
-                            unselectedTextColor = ChessTextSecondary,
-                            indicatorColor = ChessGreenPrimary.copy(alpha = 0.16f)
+                            selectedIconColor = Color.White,
+                            selectedTextColor = AccentGreen,
+                            indicatorColor = AccentGreen,
+                            unselectedIconColor = TextSecondary,
+                            unselectedTextColor = TextSecondary
                         )
                     )
                 }
             }
         }
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            uiState.statusMessage?.let { msg ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(ChessGreenPrimary.copy(alpha = 0.2f))
-                        .clickable { viewModel.clearStatusMessage() }
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = msg,
-                        color = ChessTextPrimary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = "✕",
-                        color = ChessTextSecondary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Box(modifier = Modifier.fillMaxSize()) {
-                when (uiState.activeTab) {
-                    AppTab.HOME -> HomeScreen(
-                        uiState = uiState,
-                        onSelectTab = viewModel::selectTab,
-                        onStartNewGame = viewModel::startNewGame,
-                        onRunAnalysis = viewModel::runFullGameAnalysis,
-                        onLoadSavedGame = viewModel::loadSavedGame,
-                        onLoadSamplePgn = { pgn -> viewModel.loadPgnString(pgn, "PGN", true) }
-                    )
-
-                    AppTab.BOARD -> AnalyzerScreen(
-                        uiState = uiState,
-                        onSquareClick = viewModel::onSquareClicked,
-                        onSelectPly = viewModel::selectPly,
-                        onGoStart = viewModel::goToStart,
-                        onGoPrev = viewModel::goToPrev,
-                        onGoNext = viewModel::goToNext,
-                        onGoEnd = viewModel::goToEnd,
-                        onRunAnalysis = viewModel::runFullGameAnalysis,
-                        onCancelAnalysis = viewModel::cancelAnalysis,
-                        onFlipBoard = viewModel::flipBoard
-                    )
-
-                    AppTab.GAMES -> GamesArchiveScreen(
-                        uiState = uiState,
-                        onLoadSavedGame = viewModel::loadSavedGame,
-                        onImportPgnText = { pgn -> viewModel.loadPgnString(pgn, "PGN", true) },
-                        onImportOnline = viewModel::importOnlineGames,
-                        onDeleteGame = viewModel::deleteSavedGame
-                    )
-
-                    AppTab.REPERTOIRE -> RepertoireScreen(
-                        uiState = uiState,
-                        onRefreshRepertoire = viewModel::rebuildRepertoire
-                    )
-
-                    AppTab.SETTINGS -> SettingsScreen(
-                        uiState = uiState,
-                        onUpdateSettings = viewModel::updateSettings,
-                        onResetSettings = viewModel::resetSettings
-                    )
-                }
+            when (currentTab) {
+                0 -> HomeScreen(
+                    uiState = uiState,
+                    onNavigateToAnalyzer = { currentTab = 1 },
+                    onNavigateToArchive = { currentTab = 2 },
+                    onNavigateToRepertoire = { currentTab = 3 },
+                    onLoadSamplePgn = { pgn ->
+                        chessViewModel.loadPgnGame(pgn, autoAnalyze = true)
+                    },
+                    onOpenSavedGame = { record ->
+                        chessViewModel.openSavedGame(record)
+                        currentTab = 1
+                    }
+                )
+                1 -> AnalyzerScreen(
+                    uiState = uiState,
+                    onSquareClick = chessViewModel::onSquareClicked,
+                    onPieceDraggedMove = chessViewModel::onPieceDraggedMove,
+                    onSelectPromotion = chessViewModel::completePromotion,
+                    onCancelPromotion = chessViewModel::cancelPromotion,
+                    onStepForward = chessViewModel::stepForward,
+                    onStepBackward = chessViewModel::stepBackward,
+                    onJumpToStart = chessViewModel::jumpToStart,
+                    onJumpToEnd = chessViewModel::jumpToEnd,
+                    onJumpToPly = chessViewModel::jumpToPly,
+                    onFlipBoard = chessViewModel::flipBoard,
+                    onToggleAnnotationMode = chessViewModel::toggleAnnotationMode,
+                    onClearAnnotations = chessViewModel::clearAnnotations,
+                    onRunAnalysis = chessViewModel::runFullGameAnalysis,
+                    onCancelAnalysis = chessViewModel::cancelAnalysis,
+                    onSaveGame = { chessViewModel.saveCurrentGameToSqlite() },
+                    onStopPractice = chessViewModel::stopRepertoirePractice
+                )
+                2 -> GamesArchiveScreen(
+                    uiState = uiState,
+                    onOpenGame = { record ->
+                        chessViewModel.openSavedGame(record)
+                        currentTab = 1
+                    },
+                    onToggleFavorite = chessViewModel::toggleFavoriteGame,
+                    onDeleteGame = chessViewModel::deleteSavedGame,
+                    onImportPgn = { pgn ->
+                        chessViewModel.loadPgnGame(pgn, autoAnalyze = true)
+                        currentTab = 1
+                    },
+                    onImportFen = { fen ->
+                        chessViewModel.loadFenPosition(fen)
+                        currentTab = 1
+                    },
+                    onImportOnline = { platform, user ->
+                        chessViewModel.importFromOnlinePlatform(platform, user)
+                    },
+                    onSearchChessComPlayer = chessViewModel::searchChessComPlayer,
+                    onLoadMoreChessComArchives = chessViewModel::loadMoreChessComArchives,
+                    onLoadAllChessComArchives = chessViewModel::loadAllRemainingChessComArchives,
+                    onSelectChessComArchiveUrl = chessViewModel::selectChessComArchiveUrl,
+                    onUpdateChessComFilters = chessViewModel::updateChessComFilters,
+                    onSelectChessComGame = { game ->
+                        chessViewModel.importSingleChessComGame(game)
+                        currentTab = 1
+                    }
+                )
+                3 -> RepertoireScreen(
+                    repertoire = uiState.repertoire,
+                    onStartPractice = { entry ->
+                        chessViewModel.startRepertoirePractice(entry)
+                        currentTab = 1
+                    },
+                    onAddRepertoire = chessViewModel::saveRepertoireLine,
+                    onDeleteRepertoire = chessViewModel::deleteRepertoireLine
+                )
+                4 -> SettingsScreen(
+                    settings = uiState.settings,
+                    onUpdateSettings = chessViewModel::updateSettings,
+                    onApplyThemePreset = chessViewModel::applyBoardThemePreset,
+                    onResetSettings = chessViewModel::resetSettings
+                )
             }
         }
     }

@@ -1,50 +1,140 @@
 package com.nikanokh.chessinsightanalyzermobile.domain.chess
 
-import com.nikanokh.chessinsightanalyzermobile.domain.model.*
+import com.nikanokh.chessinsightanalyzermobile.domain.model.ChessPiece
+import com.nikanokh.chessinsightanalyzermobile.domain.model.GameHeaders
+import com.nikanokh.chessinsightanalyzermobile.domain.model.MoveTreeNode
+import com.nikanokh.chessinsightanalyzermobile.domain.model.PieceColor
+import com.nikanokh.chessinsightanalyzermobile.domain.model.PieceType
 import kotlin.math.abs
 
-const val INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-
-class ChessPosition(
-    val board: Array<Array<Piece?>> = Array(8) { arrayOfNulls<Piece>(8) },
-    var sideToMove: PieceColor = PieceColor.WHITE,
-    var whiteCastleKingside: Boolean = true,
-    var whiteCastleQueenside: Boolean = true,
-    var blackCastleKingside: Boolean = true,
-    var blackCastleQueenside: Boolean = true,
-    var enPassantSquare: Square? = null,
-    var halfmoveClock: Int = 0,
-    var fullmoveNumber: Int = 1
+data class ChessMove(
+    val from: Int,
+    val to: Int,
+    val promotion: PieceType? = null,
+    val isCastlesKingside: Boolean = false,
+    val isCastlesQueenside: Boolean = false,
+    val isEnPassant: Boolean = false,
+    val capturedPiece: ChessPiece? = null
 ) {
-    fun copy(): ChessPosition {
-        val nextBoard = Array(8) { f -> Array(8) { r -> board[f][r] } }
-        return ChessPosition(
-            board = nextBoard,
-            sideToMove = sideToMove,
-            whiteCastleKingside = whiteCastleKingside,
-            whiteCastleQueenside = whiteCastleQueenside,
-            blackCastleKingside = blackCastleKingside,
-            blackCastleQueenside = blackCastleQueenside,
-            enPassantSquare = enPassantSquare,
-            halfmoveClock = halfmoveClock,
-            fullmoveNumber = fullmoveNumber
+    val fromAlgebraic: String
+        get() = ChessEngine.squareToAlgebraic(from)
+
+    val toAlgebraic: String
+        get() = ChessEngine.squareToAlgebraic(to)
+
+    val uci: String
+        get() = "$fromAlgebraic$toAlgebraic${promotion?.code ?: ""}"
+}
+
+data class ChessBoardState(
+    val squares: List<ChessPiece?>, // 64 squares: 0 = a8 .. 7 = h8, ..., 56 = a1 .. 63 = h1
+    val sideToMove: PieceColor = PieceColor.WHITE,
+    val castlingWhiteKingside: Boolean = true,
+    val castlingWhiteQueenside: Boolean = true,
+    val castlingBlackKingside: Boolean = true,
+    val castlingBlackQueenside: Boolean = true,
+    val enPassantSquare: Int? = null,
+    val halfMoveClock: Int = 0,
+    val fullMoveNumber: Int = 1
+) {
+    fun pieceAt(square: Int): ChessPiece? = squares.getOrNull(square)
+
+    fun pieceAt(algebraic: String): ChessPiece? {
+        val sq = ChessEngine.algebraicToSquare(algebraic)
+        return if (sq in 0..63) squares[sq] else null
+    }
+
+    fun toFen(): String = ChessEngine.toFen(this)
+
+    companion object {
+        fun fromFen(fen: String): ChessBoardState = ChessEngine.parseFen(fen)
+    }
+}
+
+data class ParsedPgnGame(
+    val headers: GameHeaders,
+    val initialFen: String,
+    val nodes: List<MoveTreeNode>,
+    val sanMoves: List<String>
+)
+
+/**
+ * Complete FIDE-compliant chess rules engine (castling, en-passant, pins, check, checkmate,
+ * stalemate, SAN generation/parsing, FEN & PGN parsing).
+ */
+object ChessEngine {
+    const val INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+    fun squareToRow(sq: Int): Int = sq / 8
+    fun squareToCol(sq: Int): Int = sq % 8
+    fun rowColToSquare(row: Int, col: Int): Int = row * 8 + col
+
+    fun squareToAlgebraic(sq: Int): String {
+        if (sq !in 0..63) return "a1"
+        val file = ('a'.code + (sq % 8)).toChar()
+        val rank = 8 - (sq / 8)
+        return "$file$rank"
+    }
+
+    fun algebraicToSquare(alg: String): Int {
+        if (alg.length < 2) return -1
+        val file = alg[0].lowercaseChar().code - 'a'.code
+        val rank = alg[1].digitToIntOrNull() ?: return -1
+        val row = 8 - rank
+        if (file !in 0..7 || row !in 0..7) return -1
+        return row * 8 + file
+    }
+
+    fun parseFen(fen: String): ChessBoardState {
+        val trimmed = fen.trim().ifEmpty { INITIAL_FEN }
+        val parts = trimmed.split(Regex("\\s+"))
+        val boardPart = parts.getOrNull(0) ?: INITIAL_FEN.substringBefore(" ")
+        val turnPart = parts.getOrNull(1) ?: "w"
+        val castlingPart = parts.getOrNull(2) ?: "-"
+        val epPart = parts.getOrNull(3) ?: "-"
+        val halfMove = parts.getOrNull(4)?.toIntOrNull() ?: 0
+        val fullMove = parts.getOrNull(5)?.toIntOrNull() ?: 1
+
+        val squares = MutableList<ChessPiece?>(64) { null }
+        val ranks = boardPart.split("/")
+        for (r in 0 until minOf(8, ranks.size)) {
+            var c = 0
+            for (ch in ranks[r]) {
+                if (c >= 8) break
+                if (ch.isDigit()) {
+                    c += ch.digitToInt()
+                } else {
+                    val color = if (ch.isUpperCase()) PieceColor.WHITE else PieceColor.BLACK
+                    val type = PieceType.fromChar(ch)
+                    if (type != null) {
+                        squares[r * 8 + c] = ChessPiece(type, color)
+                    }
+                    c++
+                }
+            }
+        }
+
+        val epSq = if (epPart != "-") algebraicToSquare(epPart).takeIf { it in 0..63 } else null
+
+        return ChessBoardState(
+            squares = squares,
+            sideToMove = PieceColor.fromCode(turnPart.firstOrNull() ?: 'w'),
+            castlingWhiteKingside = castlingPart.contains('K'),
+            castlingWhiteQueenside = castlingPart.contains('Q'),
+            castlingBlackKingside = castlingPart.contains('k'),
+            castlingBlackQueenside = castlingPart.contains('q'),
+            enPassantSquare = epSq,
+            halfMoveClock = halfMove,
+            fullMoveNumber = fullMove
         )
     }
 
-    fun pieceAt(sq: Square): Piece? = board[sq.file][sq.rank]
-    fun pieceAt(file: Int, rank: Int): Piece? =
-        if (file in 0..7 && rank in 0..7) board[file][rank] else null
-
-    fun setPiece(sq: Square, piece: Piece?) {
-        board[sq.file][sq.rank] = piece
-    }
-
-    fun toFen(): String {
+    fun toFen(state: ChessBoardState): String {
         val sb = StringBuilder()
-        for (rank in 7 downTo 0) {
+        for (r in 0 until 8) {
             var emptyCount = 0
-            for (file in 0..7) {
-                val p = board[file][rank]
+            for (c in 0 until 8) {
+                val p = state.squares[r * 8 + c]
                 if (p == null) {
                     emptyCount++
                 } else {
@@ -52,249 +142,296 @@ class ChessPosition(
                         sb.append(emptyCount)
                         emptyCount = 0
                     }
-                    val ch = if (p.color == PieceColor.WHITE) {
-                        p.type.fenChar.uppercaseChar()
-                    } else {
-                        p.type.fenChar
-                    }
-                    sb.append(ch)
+                    sb.append(p.fenChar)
                 }
             }
             if (emptyCount > 0) sb.append(emptyCount)
-            if (rank > 0) sb.append('/')
+            if (r < 7) sb.append('/')
         }
-        sb.append(' ').append(sideToMove.code).append(' ')
+
+        sb.append(' ').append(state.sideToMove.code).append(' ')
+
         val castling = buildString {
-            if (whiteCastleKingside) append('K')
-            if (whiteCastleQueenside) append('Q')
-            if (blackCastleKingside) append('k')
-            if (blackCastleQueenside) append('q')
+            if (state.castlingWhiteKingside) append('K')
+            if (state.castlingWhiteQueenside) append('Q')
+            if (state.castlingBlackKingside) append('k')
+            if (state.castlingBlackQueenside) append('q')
         }.ifEmpty { "-" }
         sb.append(castling).append(' ')
-        sb.append(enPassantSquare?.algebraic ?: "-").append(' ')
-        sb.append(halfmoveClock).append(' ').append(fullmoveNumber)
+
+        val ep = state.enPassantSquare?.let { squareToAlgebraic(it) } ?: "-"
+        sb.append(ep).append(' ')
+        sb.append(state.halfMoveClock).append(' ')
+        sb.append(state.fullMoveNumber)
+
         return sb.toString()
     }
 
-    fun findKing(color: PieceColor): Square? {
-        for (f in 0..7) {
-            for (r in 0..7) {
-                val p = board[f][r]
-                if (p != null && p.color == color && p.type == PieceType.KING) {
-                    return Square(f, r)
+    fun isSquareAttacked(state: ChessBoardState, targetSq: Int, byColor: PieceColor): Boolean {
+        val tr = squareToRow(targetSq)
+        val tc = squareToCol(targetSq)
+
+        // 1. Pawn attacks
+        val pawnAttackRow = if (byColor == PieceColor.WHITE) tr + 1 else tr - 1
+        if (pawnAttackRow in 0..7) {
+            for (dc in intArrayOf(-1, 1)) {
+                val pc = tc + dc
+                if (pc in 0..7) {
+                    val p = state.squares[rowColToSquare(pawnAttackRow, pc)]
+                    if (p != null && p.color == byColor && p.type == PieceType.PAWN) return true
                 }
             }
-        }
-        return null
-    }
-
-    fun isSquareAttackedBy(target: Square, attackerColor: PieceColor): Boolean {
-        // 1. Pawn attacks
-        val pawnDir = if (attackerColor == PieceColor.WHITE) -1 else 1
-        for (df in intArrayOf(-1, 1)) {
-            val p = pieceAt(target.file + df, target.rank + pawnDir)
-            if (p != null && p.color == attackerColor && p.type == PieceType.PAWN) return true
         }
 
         // 2. Knight attacks
-        val knightJumps = arrayOf(
-            intArrayOf(1, 2), intArrayOf(2, 1), intArrayOf(2, -1), intArrayOf(1, -2),
-            intArrayOf(-1, -2), intArrayOf(-2, -1), intArrayOf(-2, 1), intArrayOf(-1, 2)
+        val knightMoves = arrayOf(
+            intArrayOf(-2, -1), intArrayOf(-2, 1),
+            intArrayOf(-1, -2), intArrayOf(-1, 2),
+            intArrayOf(1, -2), intArrayOf(1, 2),
+            intArrayOf(2, -1), intArrayOf(2, 1)
         )
-        for (jump in knightJumps) {
-            val p = pieceAt(target.file + jump[0], target.rank + jump[1])
-            if (p != null && p.color == attackerColor && p.type == PieceType.KNIGHT) return true
+        for (d in knightMoves) {
+            val r = tr + d[0]
+            val c = tc + d[1]
+            if (r in 0..7 && c in 0..7) {
+                val p = state.squares[rowColToSquare(r, c)]
+                if (p != null && p.color == byColor && p.type == PieceType.KNIGHT) return true
+            }
         }
 
         // 3. King attacks
-        for (df in -1..1) {
-            for (dr in -1..1) {
-                if (df == 0 && dr == 0) continue
-                val p = pieceAt(target.file + df, target.rank + dr)
-                if (p != null && p.color == attackerColor && p.type == PieceType.KING) return true
+        for (dr in -1..1) {
+            for (dc in -1..1) {
+                if (dr == 0 && dc == 0) continue
+                val r = tr + dr
+                val c = tc + dc
+                if (r in 0..7 && c in 0..7) {
+                    val p = state.squares[rowColToSquare(r, c)]
+                    if (p != null && p.color == byColor && p.type == PieceType.KING) return true
+                }
             }
         }
 
-        // 4. Orthogonal sliding (Rook / Queen)
-        val orthoDirs = arrayOf(intArrayOf(1, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(0, -1))
-        for (dir in orthoDirs) {
-            var f = target.file + dir[0]
-            var r = target.rank + dir[1]
-            while (f in 0..7 && r in 0..7) {
-                val p = board[f][r]
+        // 4. Orthogonal rays (Rook / Queen)
+        val orthoDirs = arrayOf(intArrayOf(-1, 0), intArrayOf(1, 0), intArrayOf(0, -1), intArrayOf(0, 1))
+        for (d in orthoDirs) {
+            var r = tr + d[0]
+            var c = tc + d[1]
+            while (r in 0..7 && c in 0..7) {
+                val p = state.squares[rowColToSquare(r, c)]
                 if (p != null) {
-                    if (p.color == attackerColor && (p.type == PieceType.ROOK || p.type == PieceType.QUEEN)) {
-                        return true
-                    }
+                    if (p.color == byColor && (p.type == PieceType.ROOK || p.type == PieceType.QUEEN)) return true
                     break
                 }
-                f += dir[0]
-                r += dir[1]
+                r += d[0]
+                c += d[1]
             }
         }
 
-        // 5. Diagonal sliding (Bishop / Queen)
-        val diagDirs = arrayOf(intArrayOf(1, 1), intArrayOf(1, -1), intArrayOf(-1, 1), intArrayOf(-1, -1))
-        for (dir in diagDirs) {
-            var f = target.file + dir[0]
-            var r = target.rank + dir[1]
-            while (f in 0..7 && r in 0..7) {
-                val p = board[f][r]
+        // 5. Diagonal rays (Bishop / Queen)
+        val diagDirs = arrayOf(intArrayOf(-1, -1), intArrayOf(-1, 1), intArrayOf(1, -1), intArrayOf(1, 1))
+        for (d in diagDirs) {
+            var r = tr + d[0]
+            var c = tc + d[1]
+            while (r in 0..7 && c in 0..7) {
+                val p = state.squares[rowColToSquare(r, c)]
                 if (p != null) {
-                    if (p.color == attackerColor && (p.type == PieceType.BISHOP || p.type == PieceType.QUEEN)) {
-                        return true
-                    }
+                    if (p.color == byColor && (p.type == PieceType.BISHOP || p.type == PieceType.QUEEN)) return true
                     break
                 }
-                f += dir[0]
-                r += dir[1]
+                r += d[0]
+                c += d[1]
             }
         }
 
         return false
     }
 
-    fun isInCheck(color: PieceColor = sideToMove): Boolean {
-        val kingSq = findKing(color) ?: return false
-        return isSquareAttackedBy(kingSq, color.opposite())
+    fun findKingSquare(state: ChessBoardState, color: PieceColor): Int {
+        for (sq in 0 until 64) {
+            val p = state.squares[sq]
+            if (p != null && p.color == color && p.type == PieceType.KING) return sq
+        }
+        return -1
     }
 
-    fun generatePseudoLegalMoves(): List<ChessMove> {
-        val moves = mutableListOf<ChessMove>()
-        val us = sideToMove
-        val them = us.opposite()
+    fun isKingInCheck(state: ChessBoardState, color: PieceColor = state.sideToMove): Boolean {
+        val kingSq = findKingSquare(state, color)
+        if (kingSq == -1) return false
+        return isSquareAttacked(state, kingSq, color.opposite)
+    }
 
-        for (f in 0..7) {
-            for (r in 0..7) {
-                val piece = board[f][r] ?: continue
-                if (piece.color != us) continue
-                val from = Square(f, r)
+    fun generatePseudoLegalMoves(state: ChessBoardState): List<ChessMove> {
+        val moves = ArrayList<ChessMove>(48)
+        val us = state.sideToMove
+        val them = us.opposite
 
-                when (piece.type) {
-                    PieceType.PAWN -> {
-                        val dir = if (us == PieceColor.WHITE) 1 else -1
-                        val startRank = if (us == PieceColor.WHITE) 1 else 6
-                        val promoRank = if (us == PieceColor.WHITE) 7 else 0
-                        val nextRank = r + dir
+        for (sq in 0 until 64) {
+            val piece = state.squares[sq] ?: continue
+            if (piece.color != us) continue
+            val r = squareToRow(sq)
+            val c = squareToCol(sq)
 
-                        if (nextRank in 0..7 && board[f][nextRank] == null) {
-                            val to = Square(f, nextRank)
-                            if (nextRank == promoRank) {
+            when (piece.type) {
+                PieceType.PAWN -> {
+                    val dir = if (us == PieceColor.WHITE) -1 else 1
+                    val startRow = if (us == PieceColor.WHITE) 6 else 1
+                    val promoRow = if (us == PieceColor.WHITE) 0 else 7
+                    val nextR = r + dir
+
+                    if (nextR in 0..7) {
+                        val oneStepSq = rowColToSquare(nextR, c)
+                        if (state.squares[oneStepSq] == null) {
+                            if (nextR == promoRow) {
                                 for (promo in listOf(PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT)) {
-                                    moves.add(ChessMove(from, to, piece, promotion = promo))
+                                    moves.add(ChessMove(sq, oneStepSq, promotion = promo))
                                 }
                             } else {
-                                moves.add(ChessMove(from, to, piece))
-                                val doubleRank = r + 2 * dir
-                                if (r == startRank && board[f][doubleRank] == null) {
-                                    moves.add(ChessMove(from, Square(f, doubleRank), piece))
+                                moves.add(ChessMove(sq, oneStepSq))
+                                if (r == startRow) {
+                                    val twoStepSq = rowColToSquare(r + dir * 2, c)
+                                    if (state.squares[twoStepSq] == null) {
+                                        moves.add(ChessMove(sq, twoStepSq))
+                                    }
                                 }
                             }
                         }
 
-                        for (df in intArrayOf(-1, 1)) {
-                            val cf = f + df
-                            if (cf !in 0..7 || nextRank !in 0..7) continue
-                            val to = Square(cf, nextRank)
-                            val target = board[cf][nextRank]
-                            if (target != null && target.color == them) {
-                                if (nextRank == promoRank) {
-                                    for (promo in listOf(PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT)) {
-                                        moves.add(ChessMove(from, to, piece, captured = target, promotion = promo))
+                        // Captures & En passant
+                        for (dc in intArrayOf(-1, 1)) {
+                            val nc = c + dc
+                            if (nc in 0..7) {
+                                val targetSq = rowColToSquare(nextR, nc)
+                                val targetPiece = state.squares[targetSq]
+                                if (targetPiece != null && targetPiece.color == them) {
+                                    if (nextR == promoRow) {
+                                        for (promo in listOf(PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT)) {
+                                            moves.add(ChessMove(sq, targetSq, promotion = promo, capturedPiece = targetPiece))
+                                        }
+                                    } else {
+                                        moves.add(ChessMove(sq, targetSq, capturedPiece = targetPiece))
                                     }
-                                } else {
-                                    moves.add(ChessMove(from, to, piece, captured = target))
+                                } else if (state.enPassantSquare == targetSq) {
+                                    val capturedPawnSq = rowColToSquare(r, nc)
+                                    val epCaptured = state.squares[capturedPawnSq]
+                                    moves.add(ChessMove(sq, targetSq, isEnPassant = true, capturedPiece = epCaptured))
                                 }
-                            } else if (enPassantSquare == to) {
-                                val epCaptured = board[cf][r] ?: Piece(PieceType.PAWN, them)
-                                moves.add(ChessMove(from, to, piece, captured = epCaptured, isEnPassant = true))
                             }
                         }
                     }
+                }
 
-                    PieceType.KNIGHT -> {
-                        val jumps = arrayOf(
-                            intArrayOf(1, 2), intArrayOf(2, 1), intArrayOf(2, -1), intArrayOf(1, -2),
-                            intArrayOf(-1, -2), intArrayOf(-2, -1), intArrayOf(-2, 1), intArrayOf(-1, 2)
-                        )
-                        for (j in jumps) {
-                            val nf = f + j[0]
-                            val nr = r + j[1]
-                            if (nf in 0..7 && nr in 0..7) {
-                                val target = board[nf][nr]
+                PieceType.KNIGHT -> {
+                    val deltas = arrayOf(
+                        intArrayOf(-2, -1), intArrayOf(-2, 1),
+                        intArrayOf(-1, -2), intArrayOf(-1, 2),
+                        intArrayOf(1, -2), intArrayOf(1, 2),
+                        intArrayOf(2, -1), intArrayOf(2, 1)
+                    )
+                    for (d in deltas) {
+                        val nr = r + d[0]
+                        val nc = c + d[1]
+                        if (nr in 0..7 && nc in 0..7) {
+                            val toSq = rowColToSquare(nr, nc)
+                            val target = state.squares[toSq]
+                            if (target == null || target.color == them) {
+                                moves.add(ChessMove(sq, toSq, capturedPiece = target))
+                            }
+                        }
+                    }
+                }
+
+                PieceType.BISHOP, PieceType.ROOK, PieceType.QUEEN -> {
+                    val dirs = mutableListOf<IntArray>()
+                    if (piece.type == PieceType.BISHOP || piece.type == PieceType.QUEEN) {
+                        dirs.add(intArrayOf(-1, -1))
+                        dirs.add(intArrayOf(-1, 1))
+                        dirs.add(intArrayOf(1, -1))
+                        dirs.add(intArrayOf(1, 1))
+                    }
+                    if (piece.type == PieceType.ROOK || piece.type == PieceType.QUEEN) {
+                        dirs.add(intArrayOf(-1, 0))
+                        dirs.add(intArrayOf(1, 0))
+                        dirs.add(intArrayOf(0, -1))
+                        dirs.add(intArrayOf(0, 1))
+                    }
+                    for (d in dirs) {
+                        var nr = r + d[0]
+                        var nc = c + d[1]
+                        while (nr in 0..7 && nc in 0..7) {
+                            val toSq = rowColToSquare(nr, nc)
+                            val target = state.squares[toSq]
+                            if (target == null) {
+                                moves.add(ChessMove(sq, toSq))
+                            } else {
+                                if (target.color == them) {
+                                    moves.add(ChessMove(sq, toSq, capturedPiece = target))
+                                }
+                                break
+                            }
+                            nr += d[0]
+                            nc += d[1]
+                        }
+                    }
+                }
+
+                PieceType.KING -> {
+                    for (dr in -1..1) {
+                        for (dc in -1..1) {
+                            if (dr == 0 && dc == 0) continue
+                            val nr = r + dr
+                            val nc = c + dc
+                            if (nr in 0..7 && nc in 0..7) {
+                                val toSq = rowColToSquare(nr, nc)
+                                val target = state.squares[toSq]
                                 if (target == null || target.color == them) {
-                                    moves.add(ChessMove(from, Square(nf, nr), piece, captured = target))
+                                    moves.add(ChessMove(sq, toSq, capturedPiece = target))
                                 }
                             }
                         }
                     }
 
-                    PieceType.BISHOP, PieceType.ROOK, PieceType.QUEEN -> {
-                        val dirs = mutableListOf<IntArray>()
-                        if (piece.type != PieceType.BISHOP) {
-                            dirs.addAll(listOf(intArrayOf(1, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(0, -1)))
-                        }
-                        if (piece.type != PieceType.ROOK) {
-                            dirs.addAll(listOf(intArrayOf(1, 1), intArrayOf(1, -1), intArrayOf(-1, 1), intArrayOf(-1, -1)))
-                        }
-                        for (d in dirs) {
-                            var nf = f + d[0]
-                            var nr = r + d[1]
-                            while (nf in 0..7 && nr in 0..7) {
-                                val target = board[nf][nr]
-                                if (target == null) {
-                                    moves.add(ChessMove(from, Square(nf, nr), piece))
-                                } else {
-                                    if (target.color == them) {
-                                        moves.add(ChessMove(from, Square(nf, nr), piece, captured = target))
-                                    }
-                                    break
-                                }
-                                nf += d[0]
-                                nr += d[1]
-                            }
-                        }
-                    }
-
-                    PieceType.KING -> {
-                        for (df in -1..1) {
-                            for (dr in -1..1) {
-                                if (df == 0 && dr == 0) continue
-                                val nf = f + df
-                                val nr = r + dr
-                                if (nf in 0..7 && nr in 0..7) {
-                                    val target = board[nf][nr]
-                                    if (target == null || target.color == them) {
-                                        moves.add(ChessMove(from, Square(nf, nr), piece, captured = target))
-                                    }
-                                }
-                            }
-                        }
-
-                        // Castling
-                        val homeRank = if (us == PieceColor.WHITE) 0 else 7
-                        if (f == 4 && r == homeRank && !isInCheck(us)) {
-                            val canKingSide = if (us == PieceColor.WHITE) whiteCastleKingside else blackCastleKingside
-                            if (canKingSide &&
-                                board[5][homeRank] == null &&
-                                board[6][homeRank] == null &&
-                                board[7][homeRank]?.type == PieceType.ROOK &&
-                                !isSquareAttackedBy(Square(5, homeRank), them) &&
-                                !isSquareAttackedBy(Square(6, homeRank), them)
+                    // Castling
+                    if (!isKingInCheck(state, us)) {
+                        if (us == PieceColor.WHITE && sq == 60) {
+                            if (state.castlingWhiteKingside &&
+                                state.squares[61] == null &&
+                                state.squares[62] == null &&
+                                state.squares[63]?.type == PieceType.ROOK &&
+                                !isSquareAttacked(state, 61, them) &&
+                                !isSquareAttacked(state, 62, them)
                             ) {
-                                moves.add(ChessMove(from, Square(6, homeRank), piece, isKingsideCastle = true))
+                                moves.add(ChessMove(60, 62, isCastlesKingside = true))
                             }
-
-                            val canQueenSide = if (us == PieceColor.WHITE) whiteCastleQueenside else blackCastleQueenside
-                            if (canQueenSide &&
-                                board[3][homeRank] == null &&
-                                board[2][homeRank] == null &&
-                                board[1][homeRank] == null &&
-                                board[0][homeRank]?.type == PieceType.ROOK &&
-                                !isSquareAttackedBy(Square(3, homeRank), them) &&
-                                !isSquareAttackedBy(Square(2, homeRank), them)
+                            if (state.castlingWhiteQueenside &&
+                                state.squares[59] == null &&
+                                state.squares[58] == null &&
+                                state.squares[57] == null &&
+                                state.squares[56]?.type == PieceType.ROOK &&
+                                !isSquareAttacked(state, 59, them) &&
+                                !isSquareAttacked(state, 58, them)
                             ) {
-                                moves.add(ChessMove(from, Square(2, homeRank), piece, isQueensideCastle = true))
+                                moves.add(ChessMove(60, 58, isCastlesQueenside = true))
+                            }
+                        } else if (us == PieceColor.BLACK && sq == 4) {
+                            if (state.castlingBlackKingside &&
+                                state.squares[5] == null &&
+                                state.squares[6] == null &&
+                                state.squares[7]?.type == PieceType.ROOK &&
+                                !isSquareAttacked(state, 5, them) &&
+                                !isSquareAttacked(state, 6, them)
+                            ) {
+                                moves.add(ChessMove(4, 6, isCastlesKingside = true))
+                            }
+                            if (state.castlingBlackQueenside &&
+                                state.squares[3] == null &&
+                                state.squares[2] == null &&
+                                state.squares[1] == null &&
+                                state.squares[0]?.type == PieceType.ROOK &&
+                                !isSquareAttacked(state, 3, them) &&
+                                !isSquareAttacked(state, 2, them)
+                            ) {
+                                moves.add(ChessMove(4, 2, isCastlesQueenside = true))
                             }
                         }
                     }
@@ -304,393 +441,326 @@ class ChessPosition(
         return moves
     }
 
-    fun applyMove(move: ChessMove): ChessPosition {
-        val next = copy()
-        val us = sideToMove
-        val homeRank = if (us == PieceColor.WHITE) 0 else 7
+    fun applyMove(state: ChessBoardState, move: ChessMove): ChessBoardState {
+        val nextSquares = state.squares.toMutableList()
+        val movingPiece = nextSquares[move.from] ?: return state
+        val us = movingPiece.color
 
-        next.setPiece(move.from, null)
+        nextSquares[move.from] = null
         if (move.isEnPassant) {
-            next.board[move.to.file][move.from.rank] = null
+            val epCapturedRow = squareToRow(move.from)
+            val epCapturedCol = squareToCol(move.to)
+            nextSquares[rowColToSquare(epCapturedRow, epCapturedCol)] = null
         }
 
-        val placedPiece = if (move.promotion != null) {
-            Piece(move.promotion, us)
-        } else {
-            move.piece
-        }
-        next.setPiece(move.to, placedPiece)
-
-        if (move.isKingsideCastle) {
-            val rook = next.board[7][homeRank]
-            next.board[7][homeRank] = null
-            next.board[5][homeRank] = rook
-        } else if (move.isQueensideCastle) {
-            val rook = next.board[0][homeRank]
-            next.board[0][homeRank] = null
-            next.board[3][homeRank] = rook
-        }
-
-        // Update castling rights
-        if (move.piece.type == PieceType.KING) {
+        if (move.isCastlesKingside) {
             if (us == PieceColor.WHITE) {
-                next.whiteCastleKingside = false
-                next.whiteCastleQueenside = false
+                nextSquares[61] = nextSquares[63]
+                nextSquares[63] = null
             } else {
-                next.blackCastleKingside = false
-                next.blackCastleQueenside = false
+                nextSquares[5] = nextSquares[7]
+                nextSquares[7] = null
+            }
+        } else if (move.isCastlesQueenside) {
+            if (us == PieceColor.WHITE) {
+                nextSquares[59] = nextSquares[56]
+                nextSquares[56] = null
+            } else {
+                nextSquares[3] = nextSquares[0]
+                nextSquares[0] = null
             }
         }
-        if (move.from == Square(0, 0) || move.to == Square(0, 0)) next.whiteCastleQueenside = false
-        if (move.from == Square(7, 0) || move.to == Square(7, 0)) next.whiteCastleKingside = false
-        if (move.from == Square(0, 7) || move.to == Square(0, 7)) next.blackCastleQueenside = false
-        if (move.from == Square(7, 7) || move.to == Square(7, 7)) next.blackCastleKingside = false
 
-        // Update en passant square
-        next.enPassantSquare = if (move.piece.type == PieceType.PAWN && abs(move.to.rank - move.from.rank) == 2) {
-            Square(move.from.file, (move.from.rank + move.to.rank) / 2)
+        val finalPiece = if (move.promotion != null) {
+            ChessPiece(move.promotion, us)
+        } else {
+            movingPiece
+        }
+        nextSquares[move.to] = finalPiece
+
+        var wk = state.castlingWhiteKingside
+        var wq = state.castlingWhiteQueenside
+        var bk = state.castlingBlackKingside
+        var bq = state.castlingBlackQueenside
+
+        if (movingPiece.type == PieceType.KING) {
+            if (us == PieceColor.WHITE) {
+                wk = false
+                wq = false
+            } else {
+                bk = false
+                bq = false
+            }
+        }
+        if (move.from == 63 || move.to == 63) wk = false
+        if (move.from == 56 || move.to == 56) wq = false
+        if (move.from == 7 || move.to == 7) bk = false
+        if (move.from == 0 || move.to == 0) bq = false
+
+        val epSquare = if (movingPiece.type == PieceType.PAWN && abs(squareToRow(move.to) - squareToRow(move.from)) == 2) {
+            rowColToSquare((squareToRow(move.from) + squareToRow(move.to)) / 2, squareToCol(move.from))
         } else {
             null
         }
 
-        next.halfmoveClock = if (move.piece.type == PieceType.PAWN || move.captured != null) {
+        val halfMove = if (movingPiece.type == PieceType.PAWN || move.capturedPiece != null || move.isEnPassant) {
             0
         } else {
-            halfmoveClock + 1
+            state.halfMoveClock + 1
         }
 
-        if (us == PieceColor.BLACK) {
-            next.fullmoveNumber = fullmoveNumber + 1
-        }
-        next.sideToMove = us.opposite()
-        return next
+        val fullMove = if (us == PieceColor.BLACK) state.fullMoveNumber + 1 else state.fullMoveNumber
+
+        return ChessBoardState(
+            squares = nextSquares,
+            sideToMove = us.opposite,
+            castlingWhiteKingside = wk,
+            castlingWhiteQueenside = wq,
+            castlingBlackKingside = bk,
+            castlingBlackQueenside = bq,
+            enPassantSquare = epSquare,
+            halfMoveClock = halfMove,
+            fullMoveNumber = fullMove
+        )
     }
 
-    fun generateLegalMoves(): List<ChessMove> {
-        val us = sideToMove
-        return generatePseudoLegalMoves().filter { candidate ->
-            val after = applyMove(candidate)
-            !after.isInCheck(us)
+    fun generateLegalMoves(state: ChessBoardState): List<ChessMove> {
+        val us = state.sideToMove
+        return generatePseudoLegalMoves(state).filter { m ->
+            val after = applyMove(state, m)
+            !isKingInCheck(after, us)
         }
     }
 
-    fun toSan(move: ChessMove, legalMoves: List<ChessMove> = generateLegalMoves()): String {
-        val after = applyMove(move)
-        val suffix = if (after.isInCheck(after.sideToMove)) {
-            if (after.generateLegalMoves().isEmpty()) "#" else "+"
-        } else {
-            ""
+    fun moveToSan(state: ChessBoardState, move: ChessMove): String {
+        val movingPiece = state.squares[move.from] ?: return move.uci
+        val legalMoves = generateLegalMoves(state)
+        val afterState = applyMove(state, move)
+        val oppLegal = generateLegalMoves(afterState)
+        val inCheck = isKingInCheck(afterState, afterState.sideToMove)
+        val suffix = when {
+            inCheck && oppLegal.isEmpty() -> "#"
+            inCheck -> "+"
+            else -> ""
         }
 
-        if (move.isKingsideCastle) return "O-O$suffix"
-        if (move.isQueensideCastle) return "O-O-O$suffix"
+        if (move.isCastlesKingside) return "O-O$suffix"
+        if (move.isCastlesQueenside) return "O-O-O$suffix"
 
+        val isCapture = move.capturedPiece != null || move.isEnPassant
         val sb = StringBuilder()
-        if (move.piece.type == PieceType.PAWN) {
-            if (move.captured != null) {
-                sb.append('a' + move.from.file)
+
+        if (movingPiece.type == PieceType.PAWN) {
+            if (isCapture) {
+                sb.append(squareToAlgebraic(move.from)[0])
                 sb.append('x')
             }
-            sb.append(move.to.algebraic)
+            sb.append(squareToAlgebraic(move.to))
             if (move.promotion != null) {
-                sb.append('=').append(move.promotion.sanChar)
+                sb.append('=').append(move.promotion.sanLetter)
             }
         } else {
-            sb.append(move.piece.type.sanChar)
-            val ambiguous = legalMoves.filter {
-                it != move &&
-                    it.piece.type == move.piece.type &&
-                    it.to == move.to
+            sb.append(movingPiece.type.sanLetter)
+            val sameTypeMoves = legalMoves.filter {
+                it.from != move.from &&
+                    it.to == move.to &&
+                    state.squares[it.from]?.type == movingPiece.type
             }
-            if (ambiguous.isNotEmpty()) {
-                val sameFile = ambiguous.any { it.from.file == move.from.file }
-                val sameRank = ambiguous.any { it.from.rank == move.from.rank }
+            if (sameTypeMoves.isNotEmpty()) {
+                val fromFile = squareToAlgebraic(move.from)[0]
+                val fromRank = squareToAlgebraic(move.from)[1]
+                val fileConflict = sameTypeMoves.any { squareToAlgebraic(it.from)[0] == fromFile }
+                val rankConflict = sameTypeMoves.any { squareToAlgebraic(it.from)[1] == fromRank }
                 when {
-                    !sameFile -> sb.append('a' + move.from.file)
-                    !sameRank -> sb.append('1' + move.from.rank)
-                    else -> sb.append(move.from.algebraic)
+                    !fileConflict -> sb.append(fromFile)
+                    !rankConflict -> sb.append(fromRank)
+                    else -> sb.append(fromFile).append(fromRank)
                 }
             }
-            if (move.captured != null) sb.append('x')
-            sb.append(move.to.algebraic)
+            if (isCapture) sb.append('x')
+            sb.append(squareToAlgebraic(move.to))
         }
+
         sb.append(suffix)
         return sb.toString()
     }
 
-    fun parseSanMove(rawSan: String): ChessMove? {
-        val legal = generateLegalMoves()
-        if (legal.isEmpty()) return null
+    fun parseUciMove(state: ChessBoardState, uci: String): ChessMove? {
+        val clean = uci.trim().lowercase()
+        if (clean.length < 4) return null
+        val fromSq = algebraicToSquare(clean.substring(0, 2))
+        val toSq = algebraicToSquare(clean.substring(2, 4))
+        val promo = clean.getOrNull(4)?.let { PieceType.fromChar(it) }
+        return generateLegalMoves(state).firstOrNull {
+            it.from == fromSq && it.to == toSq && (promo == null || it.promotion == promo)
+        }
+    }
 
+    fun parseSanMove(state: ChessBoardState, rawSan: String): ChessMove? {
         val clean = rawSan.trim()
             .replace("0-0-0", "O-O-O")
             .replace("0-0", "O-O")
             .replace(Regex("[+#?!]+$"), "")
+        if (clean.isEmpty()) return null
 
-        if (clean == "O-O") return legal.firstOrNull { it.isKingsideCastle }
-        if (clean == "O-O-O") return legal.firstOrNull { it.isQueensideCastle }
-
-        // Direct exact match against generated SANs
-        for (m in legal) {
-            val candidateSan = toSan(m, legal).replace(Regex("[+#?!]+$"), "")
+        val legalMoves = generateLegalMoves(state)
+        for (m in legalMoves) {
+            val candidateSan = moveToSan(state, m).replace(Regex("[+#?!]+$"), "")
             if (candidateSan == clean) return m
         }
 
-        // Fallback flexible matcher
-        var working = clean
-        var promoType: PieceType? = null
-        val promoIdx = working.indexOf('=')
-        if (promoIdx != -1 && promoIdx + 1 < working.length) {
-            promoType = when (working[promoIdx + 1].uppercaseChar()) {
-                'Q' -> PieceType.QUEEN
-                'R' -> PieceType.ROOK
-                'B' -> PieceType.BISHOP
-                'N' -> PieceType.KNIGHT
-                else -> PieceType.QUEEN
-            }
-            working = working.substring(0, promoIdx)
-        }
+        // Also allow UCI fallback
+        parseUciMove(state, clean)?.let { return it }
 
-        if (working.length < 2) return null
-        val targetSquare = Square.fromAlgebraic(working.takeLast(2)) ?: return null
-        val prefix = working.dropLast(2).replace("x", "")
-
-        val pieceType = if (prefix.isNotEmpty() && prefix[0].isUpperCase()) {
-            when (prefix[0]) {
-                'N' -> PieceType.KNIGHT
-                'B' -> PieceType.BISHOP
-                'R' -> PieceType.ROOK
-                'Q' -> PieceType.QUEEN
-                'K' -> PieceType.KING
-                else -> PieceType.PAWN
-            }
-        } else {
-            PieceType.PAWN
-        }
-
-        val disambig = if (pieceType == PieceType.PAWN) prefix else prefix.drop(1)
-        var fileFilter: Int? = null
-        var rankFilter: Int? = null
-        for (ch in disambig) {
-            if (ch in 'a'..'h') fileFilter = ch - 'a'
-            if (ch in '1'..'8') rankFilter = ch - '1'
-        }
-
-        return legal.firstOrNull { m ->
-            m.to == targetSquare &&
-                m.piece.type == pieceType &&
-                (promoType == null || m.promotion == promoType) &&
-                (fileFilter == null || m.from.file == fileFilter) &&
-                (rankFilter == null || m.from.rank == rankFilter)
-        }
+        return null
     }
 
-    companion object {
-        fun fromFen(fen: String = INITIAL_FEN): ChessPosition {
-            val parts = fen.trim().split(Regex("\\s+"))
-            val pos = ChessPosition(
-                whiteCastleKingside = false,
-                whiteCastleQueenside = false,
-                blackCastleKingside = false,
-                blackCastleQueenside = false
-            )
-            val rows = parts.getOrNull(0)?.split('/') ?: return fromFen(INITIAL_FEN)
-            if (rows.size != 8) return fromFen(INITIAL_FEN)
-
-            for (rIdx in 0..7) {
-                val rank = 7 - rIdx
-                var file = 0
-                for (ch in rows[rIdx]) {
-                    if (ch.isDigit()) {
-                        file += (ch - '0')
-                    } else {
-                        val color = if (ch.isUpperCase()) PieceColor.WHITE else PieceColor.BLACK
-                        val type = when (ch.lowercaseChar()) {
-                            'p' -> PieceType.PAWN
-                            'n' -> PieceType.KNIGHT
-                            'b' -> PieceType.BISHOP
-                            'r' -> PieceType.ROOK
-                            'q' -> PieceType.QUEEN
-                            'k' -> PieceType.KING
-                            else -> PieceType.PAWN
-                        }
-                        if (file in 0..7) {
-                            pos.board[file][rank] = Piece(type, color)
-                        }
-                        file++
-                    }
-                }
-            }
-
-            pos.sideToMove = if (parts.getOrNull(1) == "b") PieceColor.BLACK else PieceColor.WHITE
-            val castling = parts.getOrNull(2) ?: "-"
-            pos.whiteCastleKingside = 'K' in castling
-            pos.whiteCastleQueenside = 'Q' in castling
-            pos.blackCastleKingside = 'k' in castling
-            pos.blackCastleQueenside = 'q' in castling
-            pos.enPassantSquare = parts.getOrNull(3)?.let { Square.fromAlgebraic(it) }
-            pos.halfmoveClock = parts.getOrNull(4)?.toIntOrNull() ?: 0
-            pos.fullmoveNumber = parts.getOrNull(5)?.toIntOrNull() ?: 1
-            return pos
-        }
-    }
-}
-
-object PgnParser {
-    data class ParsedPgnGame(
-        val metadata: GameMetadata,
-        val opening: OpeningInfo,
-        val moves: List<MoveNode>,
-        val rawPgn: String,
-        val finalFen: String
-    )
-
-    fun parsePgn(rawPgn: String, defaultPlatform: String = "PGN"): ParsedPgnGame {
-        val headers = mutableMapOf<String, String>()
-        val headerRegex = Regex("""\[(\w+)\s+"([^"]*)"\]""")
-        for (match in headerRegex.findAll(rawPgn)) {
-            headers[match.groupValues[1]] = match.groupValues[2]
+    fun parsePgn(pgnText: String): ParsedPgnGame {
+        val headerRegex = Regex("\\[(\\w+)\\s+\"([^\"]*)\"\\]")
+        val headerMap = mutableMapOf<String, String>()
+        for (match in headerRegex.findAll(pgnText)) {
+            headerMap[match.groupValues[1]] = match.groupValues[2]
         }
 
-        // Strip headers and comments
-        var body = rawPgn.replace(headerRegex, " ")
-        body = body.replace(Regex("""\{[^}]*\}"""), " ")
-        body = body.replace(Regex(""";[^\n]*"""), " ")
-        // Strip nested variations (...)
-        while (body.contains('(')) {
-            val cleaned = body.replace(Regex("""\([^()]*\)"""), " ")
-            if (cleaned == body) break
-            body = cleaned
+        val initialFen = headerMap["FEN"]?.takeIf { it.isNotBlank() } ?: INITIAL_FEN
+
+        // Strip headers, comments {...}, and recursive variations (...)
+        var moveSection = pgnText.replace(headerRegex, " ")
+        moveSection = moveSection.replace(Regex("\\{[^}]*\\}"), " ")
+        while (moveSection.contains("(")) {
+            val stripped = moveSection.replace(Regex("\\([^()]*\\)"), " ")
+            if (stripped == moveSection) break
+            moveSection = stripped
+        }
+        moveSection = moveSection.replace(Regex("\\$\\d+"), " ")
+        moveSection = moveSection.replace(Regex("\\d+\\.+"), " ")
+
+        val rawTokens = moveSection.trim().split(Regex("\\s+")).filter { token ->
+            token.isNotBlank() && token !in setOf("1-0", "0-1", "1/2-1/2", "*")
         }
 
-        val tokens = body
-            .replace(Regex("""\d+\.+"""), " ")
-            .replace(Regex("""\$\d+"""), " ")
-            .trim()
-            .split(Regex("""\s+"""))
-            .filter {
-                it.isNotBlank() &&
-                    it !in setOf("1-0", "0-1", "1/2-1/2", "*")
-            }
+        var currentBoard = parseFen(initialFen)
+        val nodes = ArrayList<MoveTreeNode>()
+        val sanMoves = ArrayList<String>()
+        var parentId: String? = null
 
-        var pos = ChessPosition.fromFen(headers["FEN"] ?: INITIAL_FEN)
-        val moves = mutableListOf<MoveNode>()
+        for ((index, token) in rawTokens.withIndex()) {
+            val move = parseSanMove(currentBoard, token) ?: break
+            val canonicalSan = moveToSan(currentBoard, move)
+            val beforeFen = currentBoard.toFen()
+            val nextBoard = applyMove(currentBoard, move)
+            val afterFen = nextBoard.toFen()
+            val ply = index + 1
+            val moveNum = (index / 2) + 1
+            val nodeId = "ply_${ply}_${move.uci}"
 
-        for ((idx, token) in tokens.withIndex()) {
-            val legal = pos.generateLegalMoves()
-            val move = pos.parseSanMove(token) ?: break
-            val san = pos.toSan(move, legal)
-            val fenBefore = pos.toFen()
-            val moveNumber = pos.fullmoveNumber
-            val color = pos.sideToMove
-            pos = pos.applyMove(move)
-            val fenAfter = pos.toFen()
-
-            moves.add(
-                MoveNode(
-                    id = "ply_${idx + 1}",
-                    ply = idx + 1,
-                    moveNumber = moveNumber,
-                    color = color,
-                    san = san,
+            nodes.add(
+                MoveTreeNode(
+                    id = nodeId,
+                    parentId = parentId,
+                    ply = ply,
+                    moveNumber = moveNum,
+                    color = currentBoard.sideToMove,
+                    san = canonicalSan,
                     uci = move.uci,
-                    fromSquare = move.from.algebraic,
-                    toSquare = move.to.algebraic,
-                    fenBefore = fenBefore,
-                    fenAfter = fenAfter
+                    from = move.fromAlgebraic,
+                    to = move.toAlgebraic,
+                    fenBefore = beforeFen,
+                    fenAfter = afterFen
                 )
             )
+            sanMoves.add(canonicalSan)
+            parentId = nodeId
+            currentBoard = nextBoard
         }
 
-        val detectedOpening = EcoOpeningBook.detectOpening(moves.map { it.san }, headers["ECO"])
-        val metadata = GameMetadata(
-            whiteName = headers["White"]?.takeIf { it.isNotBlank() } ?: "Белые",
-            blackName = headers["Black"]?.takeIf { it.isNotBlank() } ?: "Чёрные",
-            whiteRating = headers["WhiteElo"] ?: "",
-            blackRating = headers["BlackElo"] ?: "",
-            result = headers["Result"] ?: "*",
-            date = headers["Date"] ?: "2025.02.25",
-            event = headers["Event"] ?: "Шахматная партия",
-            site = headers["Site"] ?: defaultPlatform,
-            eco = detectedOpening.eco,
-            platform = defaultPlatform
+        val (detectedEco, detectedOpening) = EcoOpeningBook.detectOpening(sanMoves)
+
+        val headers = GameHeaders(
+            event = headerMap["Event"] ?: "Chess Match",
+            site = headerMap["Site"] ?: "Chess Insight Analyzer",
+            date = headerMap["Date"] ?: "2025.05.01",
+            round = headerMap["Round"] ?: "-",
+            white = headerMap["White"] ?: "White",
+            black = headerMap["Black"] ?: "Black",
+            result = headerMap["Result"] ?: "*",
+            whiteElo = headerMap["WhiteElo"] ?: "1800",
+            blackElo = headerMap["BlackElo"] ?: "1800",
+            timeControl = headerMap["TimeControl"] ?: "180+2",
+            eco = headerMap["ECO"]?.takeIf { it.isNotBlank() } ?: detectedEco,
+            opening = headerMap["Opening"]?.takeIf { it.isNotBlank() } ?: detectedOpening
         )
 
         return ParsedPgnGame(
-            metadata = metadata,
-            opening = detectedOpening,
-            moves = moves,
-            rawPgn = rawPgn.trim(),
-            finalFen = pos.toFen()
+            headers = headers,
+            initialFen = initialFen,
+            nodes = nodes,
+            sanMoves = sanMoves
         )
     }
 
-    fun buildPgn(metadata: GameMetadata, moves: List<MoveNode>): String {
-        val sb = StringBuilder()
-        sb.appendLine("""[Event "${metadata.event}"]""")
-        sb.appendLine("""[Site "${metadata.site}"]""")
-        sb.appendLine("""[Date "${metadata.date}"]""")
-        sb.appendLine("""[White "${metadata.whiteName}"]""")
-        sb.appendLine("""[Black "${metadata.blackName}"]""")
-        sb.appendLine("""[Result "${metadata.result}"]""")
-        sb.appendLine("""[ECO "${metadata.eco}"]""")
-        sb.appendLine()
-
-        val moveStr = buildString {
-            for (node in moves) {
-                if (node.color == PieceColor.WHITE) {
-                    append("${node.moveNumber}. ${node.san} ")
-                } else {
-                    append("${node.san} ")
-                }
-            }
-            append(metadata.result)
-        }
-        sb.append(moveStr.trim())
-        return sb.toString()
-    }
-
-    fun calculateCapturedSummary(fen: String): CapturedSummary {
-        val pos = ChessPosition.fromFen(fen)
+    /**
+     * Computes captured pieces and net material balance from a FEN position.
+     */
+    fun computeCapturedMaterial(fen: String): CapturedMaterialInfo {
+        val board = parseFen(fen)
         val initialCounts = mapOf(
-            PieceType.PAWN to 8,
-            PieceType.KNIGHT to 2,
-            PieceType.BISHOP to 2,
+            PieceType.QUEEN to 1,
             PieceType.ROOK to 2,
-            PieceType.QUEEN to 1
+            PieceType.BISHOP to 2,
+            PieceType.KNIGHT to 2,
+            PieceType.PAWN to 8
         )
-        val whiteOnBoard = mutableMapOf<PieceType, Int>()
-        val blackOnBoard = mutableMapOf<PieceType, Int>()
-        var whiteMaterial = 0
-        var blackMaterial = 0
+        val whiteCounts = mutableMapOf<PieceType, Int>()
+        val blackCounts = mutableMapOf<PieceType, Int>()
+        var whitePoints = 0
+        var blackPoints = 0
 
-        for (f in 0..7) {
-            for (r in 0..7) {
-                val p = pos.board[f][r] ?: continue
-                if (p.color == PieceColor.WHITE) {
-                    whiteOnBoard[p.type] = (whiteOnBoard[p.type] ?: 0) + 1
-                    whiteMaterial += p.type.materialValue
-                } else {
-                    blackOnBoard[p.type] = (blackOnBoard[p.type] ?: 0) + 1
-                    blackMaterial += p.type.materialValue
-                }
+        for (sq in 0 until 64) {
+            val p = board.squares[sq] ?: continue
+            val pts = when (p.type) {
+                PieceType.PAWN -> 1
+                PieceType.KNIGHT -> 3
+                PieceType.BISHOP -> 3
+                PieceType.ROOK -> 5
+                PieceType.QUEEN -> 9
+                PieceType.KING -> 0
+            }
+            if (p.color == PieceColor.WHITE) {
+                whiteCounts[p.type] = (whiteCounts[p.type] ?: 0) + 1
+                whitePoints += pts
+            } else {
+                blackCounts[p.type] = (blackCounts[p.type] ?: 0) + 1
+                blackPoints += pts
             }
         }
 
-        val capturedByWhite = mutableListOf<PieceType>()
-        val capturedByBlack = mutableListOf<PieceType>()
-        for ((type, startCount) in initialCounts) {
-            val missingBlack = (startCount - (blackOnBoard[type] ?: 0)).coerceAtLeast(0)
-            repeat(missingBlack) { capturedByWhite.add(type) }
+        val capturedByWhite = mutableListOf<ChessPiece>()
+        val capturedByBlack = mutableListOf<ChessPiece>()
 
-            val missingWhite = (startCount - (whiteOnBoard[type] ?: 0)).coerceAtLeast(0)
-            repeat(missingWhite) { capturedByBlack.add(type) }
+        for ((type, startCount) in initialCounts) {
+            val missingBlack = (startCount - (blackCounts[type] ?: 0)).coerceAtLeast(0)
+            repeat(missingBlack) {
+                capturedByWhite.add(ChessPiece(type, PieceColor.BLACK))
+            }
+            val missingWhite = (startCount - (whiteCounts[type] ?: 0)).coerceAtLeast(0)
+            repeat(missingWhite) {
+                capturedByBlack.add(ChessPiece(type, PieceColor.WHITE))
+            }
         }
 
-        return CapturedSummary(
+        return CapturedMaterialInfo(
             capturedByWhite = capturedByWhite,
             capturedByBlack = capturedByBlack,
-            materialDiffWhitePov = whiteMaterial - blackMaterial
+            whiteAdvantage = (whitePoints - blackPoints).coerceAtLeast(0),
+            blackAdvantage = (blackPoints - whitePoints).coerceAtLeast(0)
         )
     }
+
+    data class CapturedMaterialInfo(
+        val capturedByWhite: List<ChessPiece>,
+        val capturedByBlack: List<ChessPiece>,
+        val whiteAdvantage: Int,
+        val blackAdvantage: Int
+    )
 }

@@ -5,29 +5,39 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-val ChessBackground = Color(0xFF1E1C1A)
-val ChessSurface = Color(0xFF262421)
-val ChessSurfaceElevated = Color(0xFF312E2B)
+val BgPrimary = Color(0xFF161512)
+val BgSecondary = Color(0xFF262421)
+val BgCard = Color(0xFF302E2B)
+val BgElevated = Color(0xFF383632)
+val AccentGreen = Color(0xFF779954)
+val AccentTeal = Color(0xFF1BACA6)
+val AccentGold = Color(0xFFF0C15C)
+val TextPrimary = Color(0xFFF3F4F6)
+val TextSecondary = Color(0xFF9CA3AF)
+
+// Aliases for compatibility across screens
+val ChessBackground = BgPrimary
+val ChessSurface = BgSecondary
+val ChessSurfaceElevated = BgCard
 val ChessBorder = Color(0xFF3B3834)
-val ChessGreenPrimary = Color(0xFF779954)
+val ChessGreenPrimary = AccentGreen
 val ChessGoldEco = Color(0xFFA88865)
-val ChessTextPrimary = Color(0xFFEBEBEB)
-val ChessTextSecondary = Color(0xFF9E9B95)
-val ChessDanger = Color(0xFFE05252)
+val ChessTextPrimary = TextPrimary
+val ChessTextSecondary = TextSecondary
+val ChessDanger = Color(0xFFCA3431)
 
 private val DarkChessColorScheme = darkColorScheme(
-    primary = ChessGreenPrimary,
+    primary = AccentGreen,
+    secondary = AccentTeal,
+    tertiary = AccentGold,
+    background = BgPrimary,
+    surface = BgSecondary,
+    surfaceVariant = BgCard,
     onPrimary = Color.White,
-    secondary = ChessGoldEco,
     onSecondary = Color.White,
-    background = ChessBackground,
-    onBackground = ChessTextPrimary,
-    surface = ChessSurface,
-    onSurface = ChessTextPrimary,
-    surfaceVariant = ChessSurfaceElevated,
-    onSurfaceVariant = ChessTextSecondary,
-    error = ChessDanger,
-    onError = Color.White
+    onBackground = TextPrimary,
+    onSurface = TextPrimary,
+    onSurfaceVariant = TextSecondary
 )
 
 @Composable

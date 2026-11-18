@@ -7,61 +7,29 @@ plugins {
 android {
     namespace = "com.nikanokh.chessinsightanalyzermobile"
     compileSdk = 35
-    buildToolsVersion = "35.0.0"
 
     defaultConfig {
         applicationId = "com.nikanokh.chessinsightanalyzermobile"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "4.0.0-compose"
+        versionCode = 2
+        versionName = "3.0.0"
 
         vectorDrawables {
             useSupportLibrary = true
         }
     }
 
-    signingConfigs {
-        create("release") {
-            val storeFileProp = (project.findProperty("CHESS_UPLOAD_STORE_FILE") as String?)
-                ?: System.getenv("CHESS_UPLOAD_STORE_FILE")
-            val storePassProp = (project.findProperty("CHESS_UPLOAD_STORE_PASSWORD") as String?)
-                ?: System.getenv("CHESS_UPLOAD_STORE_PASSWORD")
-            val keyAliasProp = (project.findProperty("CHESS_UPLOAD_KEY_ALIAS") as String?)
-                ?: System.getenv("CHESS_UPLOAD_KEY_ALIAS")
-            val keyPassProp = (project.findProperty("CHESS_UPLOAD_KEY_PASSWORD") as String?)
-                ?: System.getenv("CHESS_UPLOAD_KEY_PASSWORD")
-
-            if (!storeFileProp.isNullOrBlank() &&
-                !storePassProp.isNullOrBlank() &&
-                !keyAliasProp.isNullOrBlank() &&
-                !keyPassProp.isNullOrBlank()
-            ) {
-                storeFile = file(storeFileProp)
-                storePassword = storePassProp
-                keyAlias = keyAliasProp
-                keyPassword = keyPassProp
-            }
-        }
-    }
-
     buildTypes {
-        debug {
-            isMinifyEnabled = false
-        }
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            val releaseSigning = signingConfigs.findByName("release")
-            signingConfig = if (releaseSigning?.storeFile != null) {
-                releaseSigning
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        debug {
+            isMinifyEnabled = false
         }
     }
 
@@ -78,6 +46,10 @@ android {
         compose = true
     }
 
+    androidResources {
+        noCompress += listOf("wasm", "js")
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -92,16 +64,19 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.activity:activity-compose:1.9.3")
 
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.navigation:navigation-compose:2.8.4")
+    implementation("androidx.webkit:webkit:1.12.1")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
+    debugImplementation("androidx.compose.ui:ui-tooling")
 }
